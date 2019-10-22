@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include "utils.h"
 
-// Alocate a matrix, if error return NULL
+// Alocate and return a matrix, if error return NULL
 int** matrix_new(int rows, int cols){
     int** m;
 
@@ -33,6 +33,17 @@ void matrix_delete(int** m){
     }
     // Free array of pointers
     free(m);
+}
+
+// Print a matrix
+void matrix_print(int** m, int rows, int cols){
+    int i, j;
+    for(i=0; i<rows; i++){
+        for(j=0; j<cols; j++){
+            printf("%d\t", m[i][j]);
+        }
+        printf("\n");
+    }
 }
 
 // Read input. Return 0 if error, else return 1
