@@ -8,6 +8,25 @@
 // This typedef was created in order to simplify syntax
 typedef int** Region;
 
+
+//Calculates the maximum grade of a certain city
+int find_max(int* grades, int nStudents){
+	int mx = grades[0];
+	for(int i=1;i<nStudents;i++){
+		if(mx < grades[i]) mx = grades[i];
+	}
+	return mx;
+}
+
+//calculates the minimum grade of a city
+int find_min(int* grades, int nStudents){
+	int mn = grades[0];
+	for(int i = 1; i<nStudents; i++){
+		if(mn > grades[i]) mn = grades[i];
+	}
+	return mn;
+}
+
 int main(){
     // Read input
     Input input;
@@ -36,6 +55,12 @@ int main(){
 
     // TODO: Calculation, storage and printing
 
+	for(i = 0; i<input.nRegions; i++){
+		for(j = 0; j<input.nCities; j++){
+			printf("%d, %d\n",find_min(regions[i][j],input.nStudents),find_max(regions[i][j],input.nStudents));
+		}
+		printf("\n");
+	}
 
 
 
