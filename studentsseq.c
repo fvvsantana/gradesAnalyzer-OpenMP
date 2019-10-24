@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <math.h>
 #include "utils.h"
 
 #define FILENAME "input.in"
@@ -100,6 +101,27 @@ double calculate_average(int* grades, int nStudents){
 	return sum/nStudents;
 }
 
+/*
+ * Calculates standard deviation of the grades of the students of a given city
+ *
+ * The algorithm calculates the average first, then the standard deviation
+ *
+ * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
+ */
+double calculate_stddev(int* grades, int nStudents){
+	double sum = 0, avg = 0;
+	if(nStudents <= 0) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
+	for(int i = 0; i<nStudents; i++){
+		avg += grades[i];
+	}
+	avg /= nStudents;
+	for(int i = 0; i < nStudents; i++){
+		sum += (grades[i] - avg)*(grades[i] - avg);
+	}
+	sum /= (nStudents - 1);
+	return sqrt(sum);
+}
+
 int main(){
     // Read input
     Input input;
@@ -133,11 +155,12 @@ int main(){
 
 	for(i = 0; i<input.nRegions; i++){
 		for(j = 0; j<input.nCities; j++){
-			printf("min: %d, max: %d, mediana: %.1lf, media: %.3lf\n",
+			printf("min: %d, max: %d, mediana: %.1lf, media: %.3lf, desvio padrao: %.3lf\n",
 					find_min(regions[i][j],input.nStudents),
 					find_max(regions[i][j],input.nStudents), 
 					find_median(regions[i][j],input.nStudents),
-					calculate_average(regions[i][j], input.nStudents)
+					calculate_average(regions[i][j], input.nStudents),
+					calculate_stddev(regions[i][j], input.nStudents)
 				  );
 		}
 		printf("\n");
