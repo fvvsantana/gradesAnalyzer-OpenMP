@@ -87,6 +87,19 @@ double find_median(int* grades, int nStudents){
 	}
 }
 
+/*
+ * Calculates the average grade of the students of the city
+ *
+ * The algorithm adds up all values of the array and then divides it by the amount of students in the city
+ */
+double calculate_average(int* grades, int nStudents){
+	double sum = 0;
+	for(int i = 0; i < nStudents; i++){
+		sum += grades[i];
+	}
+	return sum/nStudents;
+}
+
 int main(){
     // Read input
     Input input;
@@ -120,10 +133,11 @@ int main(){
 
 	for(i = 0; i<input.nRegions; i++){
 		for(j = 0; j<input.nCities; j++){
-			printf("min: %d, max: %d, mediana: %.1lf\n",
+			printf("min: %d, max: %d, mediana: %.1lf, media: %.3lf\n",
 					find_min(regions[i][j],input.nStudents),
 					find_max(regions[i][j],input.nStudents), 
-					find_median(regions[i][j],input.nStudents)
+					find_median(regions[i][j],input.nStudents),
+					calculate_average(regions[i][j], input.nStudents)
 				  );
 		}
 		printf("\n");
