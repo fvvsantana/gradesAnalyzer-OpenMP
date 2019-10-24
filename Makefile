@@ -1,5 +1,5 @@
 all:
-	gcc studentsseq.c utils.c -o studentsseq -lm -fopenmp
+	gcc studentsseq.c utils.c -g -o studentsseq -lm -fopenmp
 	#gcc studentspar.c utils.c -o studentspar -lm -fopenmp
 
 
