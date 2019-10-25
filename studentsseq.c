@@ -42,7 +42,7 @@ int find_min(int* grades, int nStudents){
 /*
  * Calculates the median grade of a certain city
  *
- * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the buckets; Then it counts how many grades 
+ * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the buckets; Then it counts how many grades
  * are equal to a certain amount and once this count reaches half of the vector, the median is found.
  *
  * The function returns double in case the amount of students is even, in which case an average will be returned.
@@ -125,9 +125,7 @@ double calculate_stddev(int* grades, int nStudents){
 int main(){
     // Read input
     Input input;
-    if(!readInput(FILENAME, &input)){
-        exit(1);
-    }
+    readInput(&input);
 
     // Create all matrices
     srand((unsigned) input.seed);
@@ -157,7 +155,7 @@ int main(){
 		for(j = 0; j<input.nCities; j++){
 			printf("min: %d, max: %d, mediana: %.1lf, media: %.3lf, desvio padrao: %.3lf\n",
 					find_min(regions[i][j],input.nStudents),
-					find_max(regions[i][j],input.nStudents), 
+					find_max(regions[i][j],input.nStudents),
 					find_median(regions[i][j],input.nStudents),
 					calculate_average(regions[i][j], input.nStudents),
 					calculate_stddev(regions[i][j], input.nStudents)

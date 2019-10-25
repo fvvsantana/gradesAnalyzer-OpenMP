@@ -46,17 +46,8 @@ void matrix_print(int** m, int rows, int cols){
     }
 }
 
-// Read input. Return 0 if error, else return 1
-int readInput(char* fileName, Input* data){
-    FILE* fp;
-    // Open file
-    fp = fopen(fileName, "r");
-    if(!fp){
-        fprintf(stderr, "ERROR: Cannot open file called: \"%s\"\n", fileName);
-        return 0;
-    }
-
+// Read input from stdin and store it in data
+void readInput(Input* data){
     // Read data
-    fscanf(fp, "%d %d %d %d", &data->nRegions, &data->nCities, &data->nStudents, &data->seed);
-    return 1;
+    scanf("%d %d %d %d", &data->nRegions, &data->nCities, &data->nStudents, &data->seed);
 }
