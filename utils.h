@@ -15,15 +15,25 @@ typedef int** Region;
 void readInput(Input* data);
 // Alocate and return a matrix, if error return NULL
 int** matrix_new(int rows, int cols);
+// Alocate and return a matrix, if error return NULL (double version)
+double** matrix_new_double(int rows, int cols);
 // Free a matrix allocated by matrix_new
 void matrix_delete(int** m);
+// Free a matrix allocated by matrix_new (double version)
+void matrix_delete_double(double** m);
 // Print a matrix
 void matrix_print(int** m, int rows, int cols);
 // Generate the regions
 Region* generateRegions(Input* input, int mod);
 // Return an array of regions of size specified in input
-Region* allocateForMeasuresByCity(Input* input);
+double*** allocateForMeasuresByCity(Input* input, int nMeasures);
 // Free array allocated by generateRegions
 void freeRegions(Region* regions, int nRegions);
+// Free array allocated by allocateForMeasuresByCity
+void freeMeasuresByCity(double*** regions, int nRegions);
+// Fill measures by city
+void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input, int maxGrade);
+// Print the measures by city
+void printMeasuresByCity(double*** measuresByCity, Input* input);
 
 #endif // UTILS_H

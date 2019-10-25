@@ -1,17 +1,4 @@
 #include <math.h>
-/*
- * Calculates the maximum grade of a certain city
- *
- * The algorithm used iterates through the array, storing the current maximum value untill the end of the array, and returning this
- *
- */
-int find_max(int* grades, int nStudents){
-	int mx = grades[0];
-	for(int i=1;i<nStudents;i++){
-		if(mx < grades[i]) mx = grades[i];
-	}
-	return mx;
-}
 
 /*
  * Calculates the minimum grade of a certain city
@@ -28,6 +15,20 @@ int find_min(int* grades, int nStudents){
 }
 
 /*
+ * Calculates the maximum grade of a certain city
+ *
+ * The algorithm used iterates through the array, storing the current maximum value untill the end of the array, and returning this
+ *
+ */
+int find_max(int* grades, int nStudents){
+	int mx = grades[0];
+	for(int i=1;i<nStudents;i++){
+		if(mx < grades[i]) mx = grades[i];
+	}
+	return mx;
+}
+
+/*
  * Calculates the median grade of a certain city
  *
  * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the buckets; Then it counts how many grades
@@ -35,13 +36,13 @@ int find_min(int* grades, int nStudents){
  *
  * The function returns double in case the amount of students is even, in which case an average will be returned.
  */
-double find_median(int* grades, int nStudents, int size){
+double find_median(int* grades, int nStudents, int range){
 	//Instead of sorting the array, we count how many of each grade are there, and parsing that array instead;
 	//Making the complexity be O(n) instead of O(n*log(n))
-	int sorted[size];
+	int sorted[range];
 	int count = 0,i, index = nStudents/2; //the index of the median, should nStudents be odd
 	double add;
-	for(i=0;i<size;i++){
+	for(i=0;i<range;i++){
 		sorted[i] = 0;
 	}
 	for(i = 0; i < nStudents; i++){
@@ -52,7 +53,7 @@ double find_median(int* grades, int nStudents, int size){
 	if(nStudents % 2){
 		//If there's an odd amount of students, the median is trivial to calculate
 		index ++; //increases one because once count reaches the index, we need the next occurence
-		while(i < size && count + sorted[i] < index){ //while the amount of grades has not superseeded the index of the median, keep going on
+		while(i < range && count + sorted[i] < index){ //while the amount of grades has not superseeded the index of the median, keep going on
 			count += sorted[i];
 			i++;
 		}
@@ -62,16 +63,16 @@ double find_median(int* grades, int nStudents, int size){
 	else{
 		//if there's an even amount of students, the median needs an extra step
 		//Once again, we have index 1 over the real value, because we need the next occurence.
-		while(i < size && count + sorted[i] < index){//max grade is here just as sanity check
+		while(i < range && count + sorted[i] < index){//max grade is here just as sanity check
 			count += sorted[i];
 			i++;
 		}
-		if(i < size && count + sorted[i] > index){//if the new value goes over the index, we know that the 2 values are the same, we can return i
+		if(i < range && count + sorted[i] > index){//if the new value goes over the index, we know that the 2 values are the same, we can return i
 			return i;
 		}
 		//otherwise, the first value is the current i, and the next value is the first bucket greater than 0
 		add = i++;//storing first value and advancing the counter
-		while(i < size && !sorted[i++]);//looks for the first non-zero value
+		while(i < range && !sorted[i++]);//looks for the first non-zero value
 		return (add + i)/2; //and returns the average
 	}
 }

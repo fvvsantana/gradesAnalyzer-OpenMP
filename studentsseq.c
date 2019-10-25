@@ -6,6 +6,7 @@
 #include "statisticsseq.h"
 
 #define MAX_GRADE 100
+#define NMEASURES 5
 
 
 int main(){
@@ -24,7 +25,13 @@ int main(){
 	}
 	*/
 
-	Region* measuresByCity = allocateForMeasuresByCity(&input);
+	double*** measuresByCity = allocateForMeasuresByCity(&input, NMEASURES);
+
+	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
+	printMeasuresByCity(measuresByCity, &input);
+
+
+	/*
 
     // TODO: Calculation, storage and printing
 	for(i = 0; i<input.nRegions; i++){
@@ -39,13 +46,14 @@ int main(){
 		}
 		printf("\n");
 	}
+	*/
 
 
 
 	// Free array of regions
 	freeRegions(regions, input.nRegions);
 	// Free array of regions for result
-	freeRegions(measuresByCity, input.nRegions);
+	freeMeasuresByCity(measuresByCity, input.nRegions);
 
     return 0;
 }
