@@ -8,6 +8,9 @@ typedef struct{
     int seed;
 } Input;
 
+// This typedef was created in order to simplify syntax
+typedef int** Region;
+
 // Read input from stdin and store it in data
 void readInput(Input* data);
 // Alocate and return a matrix, if error return NULL
@@ -16,5 +19,7 @@ int** matrix_new(int rows, int cols);
 void matrix_delete(int** m);
 // Print a matrix
 void matrix_print(int** m, int rows, int cols);
+// Generate the regions
+Region* generateRegions(Input* input, int mod);
 
 #endif // UTILS_H

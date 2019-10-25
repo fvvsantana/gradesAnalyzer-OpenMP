@@ -51,3 +51,31 @@ void readInput(Input* data){
     // Read data
     scanf("%d %d %d %d", &data->nRegions, &data->nCities, &data->nStudents, &data->seed);
 }
+
+/*
+ * Return an array of regions, where each region is a matrix, each row of this
+ * matrix is a city, each cell of the city is a student.
+ * The grades of the students is generated using the seed inside the input structure.
+ * The grades are generated between 0 and mod-1.
+*/
+Region* generateRegions(Input* input, int mod){
+    // Set seed
+    srand((unsigned) input->seed);
+    // Array of regions, where a region is basically a matrix
+    Region* regions = (Region *) malloc(sizeof(Region) * input->nRegions);
+    int i, j, k;
+    // For each region
+    for(i=0; i<input->nRegions; i++){
+        // Allocate a region
+        regions[i] = matrix_new(input->nCities, input->nStudents);
+
+        // Fill matrix
+        for(j=0; j<input->nCities; j++){
+            for(k=0; k<input->nStudents; k++){
+                regions[i][j][k] = rand()%mod;
+            }
+        }
+    }
+    // Return regions array
+    return regions;
+}
