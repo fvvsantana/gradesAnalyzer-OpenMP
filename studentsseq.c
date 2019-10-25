@@ -164,6 +164,12 @@ int main(){
 		printf("\n");
 	}
 
+	// Free data matrices
+	for(i=0; i<input.nRegions; i++){
+		matrix_delete(regions[i]);
+	}
+	// Free regions array
+	free(regions);
 
 
 
