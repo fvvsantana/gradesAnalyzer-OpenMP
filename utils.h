@@ -21,5 +21,9 @@ void matrix_delete(int** m);
 void matrix_print(int** m, int rows, int cols);
 // Generate the regions
 Region* generateRegions(Input* input, int mod);
+// Return an array of regions of size specified in input
+Region* allocateForMeasuresByCity(Input* input);
+// Free array allocated by generateRegions
+void freeRegions(Region* regions, int nRegions);
 
 #endif // UTILS_H

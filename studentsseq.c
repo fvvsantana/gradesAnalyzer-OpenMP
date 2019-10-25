@@ -9,21 +9,23 @@
 
 
 int main(){
+
+	int i, j;
     // Read input
     Input input;
     readInput(&input);
 
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
-
+	/*
 	// Show matrices
-	int i;
 	for(i=0; i<input.nRegions; i++){
 		matrix_print(regions[i], input.nCities, input.nStudents);
 		printf("\n");
 	}
+	*/
 
+	Region* measuresByCity = allocateForMeasuresByCity(&input);
 
-	int j;
     // TODO: Calculation, storage and printing
 	for(i = 0; i<input.nRegions; i++){
 		for(j = 0; j<input.nCities; j++){
@@ -40,14 +42,10 @@ int main(){
 
 
 
-	// Free data matrices
-	for(i=0; i<input.nRegions; i++){
-		matrix_delete(regions[i]);
-	}
-	// Free regions array
-	free(regions);
-
-
+	// Free array of regions
+	freeRegions(regions, input.nRegions);
+	// Free array of regions for result
+	freeRegions(measuresByCity, input.nRegions);
 
     return 0;
 }

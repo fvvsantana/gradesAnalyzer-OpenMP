@@ -79,3 +79,27 @@ Region* generateRegions(Input* input, int mod){
     // Return regions array
     return regions;
 }
+// Return an array of regions of size specified in input
+Region* allocateForMeasuresByCity(Input* input){
+    // Array of regions, where a region is basically a matrix
+    Region* regions = (Region *) malloc(sizeof(Region) * input->nRegions);
+    int i;
+    // For each region
+    for(i=0; i<input->nRegions; i++){
+        // Allocate a region
+        regions[i] = matrix_new(input->nCities, input->nStudents);
+    }
+    // Return regions array
+    return regions;
+}
+
+// Free array allocated by generateRegions or by allocateForMeasuresByCity
+void freeRegions(Region* regions, int nRegions){
+    int i;
+	// Free data matrices
+	for(i=0; i<nRegions; i++){
+		matrix_delete(regions[i]);
+	}
+	// Free regions array
+	free(regions);
+}
