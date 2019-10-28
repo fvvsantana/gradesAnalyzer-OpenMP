@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <math.h>
+#include <time.h>
 #include "utils.h"
 #include "statisticsseq.h"
 
@@ -23,10 +24,16 @@ int main(){
 	double* measuresByCountry = allocateForMeasuresByCountry(NMEASURES);
 
 
+	// Get time
+	clock_t begin = clock();
 	// Taking measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
 	fillMeasuresByRegion(measuresByCity, measuresByRegion, &input, MAX_GRADE);
 	fillMeasuresByCountry(measuresByRegion, measuresByCountry, &input, MAX_GRADE);
+	// Get time
+	clock_t end = clock();
+	// Calculate time spent
+	double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
 
 
 	// Printing
@@ -34,6 +41,7 @@ int main(){
 	printMeasuresByCity(measuresByCity, &input);
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);
+	printf("Time spent: %lf seconds\n", timeSpent);
 
 
 	// Free array of regions
