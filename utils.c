@@ -128,6 +128,19 @@ double*** allocateForMeasuresByCity(Input* input, int nMeasures){
     return regions;
 }
 
+/*
+ * Return a matrix to store the measures of min, max, median, mean and standard
+ * deviation by region. Each row is a measure, each column is a region.
+*/
+double** allocateForMeasuresByRegion(Input* input, int nMeasures){
+    return matrix_new_double(nMeasures, input->nRegions);
+}
+
+// Return an array to store the measures of a country
+double* allocateForMeasuresByCountry(int nMeasures){
+    return (double *) malloc(sizeof(double) * nMeasures);
+}
+
 // Free array allocated by generateRegions
 void freeRegions(Region* regions, int nRegions){
     int i;
@@ -152,8 +165,8 @@ void freeMeasuresByCity(double*** regions, int nRegions){
 
 /*
  * Fill the regions with taken the measures. The convention to access the measures
- * are measures[regionIndex][measureIndex][cityIndex].
- * This convention was adopted becase it will facilitate the next step.
+ * is measures[regionIndex][measureIndex][cityIndex].
+ * This convention was adopted because it will facilitate the next step.
  * The next step is take the measures by region, so we'll need to sum up all the
  * cities from a region. So it's better having the cities sequencially in the
  * memory.
@@ -169,6 +182,37 @@ void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input,
 			measuresByCity[i][4][j] = calculate_stddev(regions[i][j], input->nStudents);
         }
     }
+}
+
+/*
+ * Fill the matrix with measures by region. The convention to access the measures
+ * is [measureIndex][regionIndex].
+*/
+void fillMeasuresByRegion(double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade){
+    int j;
+    for(j=0; j<input->nRegions; j++){
+        measuresByRegion[0][j] = find_min_double(measuresByCity[j][0], input->nCities);
+        measuresByRegion[1][j] = find_max_double(measuresByCity[j][1], input->nCities);
+        // This calculation is wrong:
+		//measuresByRegion[2][j] = find_median_double(measuresByCity[j][2], input->nCities, maxGrade+1);
+        measuresByRegion[3][j] = calculate_average_double(measuresByCity[j][3], input->nCities);
+        // This calculation is wrong:
+		//measuresByRegion[4][j] = calculate_stddev_double(measuresByCity[j][4], input->nCities);
+    }
+}
+
+/*
+ * Fill the array with measures of a country. The convention to access the measures
+ * is [measureIndex].
+*/
+void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade){
+    measuresByCountry[0] = find_min_double(measuresByRegion[0], input->nRegions);
+    measuresByCountry[1] = find_max_double(measuresByRegion[1], input->nRegions);
+    // This calculation is wrong:
+	//measuresByCountry[2] = find_median_double(measuresByRegion[2], input->nRegions, maxGrade+1);
+    measuresByCountry[3] = calculate_average_double(measuresByRegion[3], input->nRegions);
+    // This calculation is wrong:
+	//measuresByCountry[4] = calculate_stddev_double(measuresByRegion[4], input->nRegions);
 }
 
 // Print the measures by city
@@ -187,5 +231,30 @@ void printMeasuresByCity(double*** measuresByCity, Input* input){
         }
         printf("\n");
     }
+}
 
+// Print the measures by region
+void printMeasuresByRegion(double** measuresByRegion, Input* input){
+    int j;
+    for(j=0; j<input->nRegions; j++){
+        printf("Reg %d: menor: %d, maior: %d, mediana: %.2lf, media: %.2lf e DP: %.2lf\n",
+            j,
+            (int) measuresByRegion[0][j],
+			(int) measuresByRegion[1][j],
+			measuresByRegion[2][j],
+			measuresByRegion[3][j],
+			measuresByRegion[4][j]
+        );
+    }
+}
+
+// Print the measures by country
+void printMeasuresByCountry(double* measuresByCountry){
+    printf("\nBrasil: menor: %d, maior: %d, mediana: %.2lf, media: %.2lf e DP: %.2lf\n",
+		(int) measuresByCountry[0],
+		(int) measuresByCountry[1],
+		measuresByCountry[2],
+		measuresByCountry[3],
+		measuresByCountry[4]
+    );
 }

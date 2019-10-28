@@ -8,52 +8,52 @@
 #define MAX_GRADE 100
 #define NMEASURES 5
 
+void debugPrintRegions(Input* input, Region* regions);
 
 int main(){
-
 	int i, j;
     // Read input
     Input input;
     readInput(&input);
 
+	// Allocation
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
-	/*
-	// Show matrices
-	for(i=0; i<input.nRegions; i++){
-		matrix_print(regions[i], input.nCities, input.nStudents);
-		printf("\n");
-	}
-	*/
-
 	double*** measuresByCity = allocateForMeasuresByCity(&input, NMEASURES);
+	double** measuresByRegion = allocateForMeasuresByRegion(&input, NMEASURES);
+	double* measuresByCountry = allocateForMeasuresByCountry(NMEASURES);
 
+
+	// Taking measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
+	fillMeasuresByRegion(measuresByCity, measuresByRegion, &input, MAX_GRADE);
+	fillMeasuresByCountry(measuresByRegion, measuresByCountry, &input, MAX_GRADE);
+
+
+	// Printing
+	//debugPrintRegions(&input, regions);
 	printMeasuresByCity(measuresByCity, &input);
-
-
-	/*
-
-    // TODO: Calculation, storage and printing
-	for(i = 0; i<input.nRegions; i++){
-		for(j = 0; j<input.nCities; j++){
-			printf("min: %d, max: %d, mediana: %.1lf, media: %.3lf, desvio padrao: %.3lf\n",
-					find_min(regions[i][j],input.nStudents),
-					find_max(regions[i][j],input.nStudents),
-					find_median(regions[i][j],input.nStudents, 101),
-					calculate_average(regions[i][j], input.nStudents),
-					calculate_stddev(regions[i][j], input.nStudents)
-				  );
-		}
-		printf("\n");
-	}
-	*/
-
+	printMeasuresByRegion(measuresByRegion, &input);
+	printMeasuresByCountry(measuresByCountry);
 
 
 	// Free array of regions
 	freeRegions(regions, input.nRegions);
 	// Free array of regions for result
 	freeMeasuresByCity(measuresByCity, input.nRegions);
+	// Free matrix of measures by region
+    matrix_delete_double(measuresByRegion);
+	// Free array of measures by country
+	free(measuresByCountry);
 
     return 0;
+}
+
+// Print randomly generated regions
+void debugPrintRegions(Input* input, Region* regions){
+	int i;
+	// Show matrices
+	for(i=0; i<input->nRegions; i++){
+		matrix_print(regions[i], input->nCities, input->nStudents);
+		printf("\n");
+	}
 }
