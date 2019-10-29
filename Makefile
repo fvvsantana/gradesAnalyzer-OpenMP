@@ -6,7 +6,7 @@ all:
 seq:
 	gcc studentsseq.c utils.c statisticsseq.c -g -o studentsseq -lm -fopenmp
 
-runseq:
+runseq: all
 	./studentsseq < input.in
 
 par:
