@@ -1,6 +1,9 @@
 #ifndef STATISTICSSEQ_H
 #define STATISTICSSEQ_H
 
+#include <stdio.h>
+#include <math.h>
+
 int find_min(int* grades, int nStudents);
 int find_max(int* grades, int nStudents);
 double find_median(int* grades, int nStudents, int range);

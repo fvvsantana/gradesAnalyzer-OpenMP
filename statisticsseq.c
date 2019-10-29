@@ -1,4 +1,4 @@
-#include <math.h>
+#include "statisticsseq.h"
 
 /*
  * Calculates the minimum grade of a certain city
@@ -62,7 +62,7 @@ double find_median(int* grades, int nStudents, int range){
 	}
 	else{
 		//if there's an even amount of students, the median needs an extra step
-		//Once again, we have index 1 over the real value, because we need the next occurence.
+		//Once again, we wait until count and sorted superseeded the index of the median
 		while(i < range && count + sorted[i] < index){//max grade is here just as sanity check
 			count += sorted[i];
 			i++;
@@ -73,6 +73,8 @@ double find_median(int* grades, int nStudents, int range){
 		//otherwise, the first value is the current i, and the next value is the first bucket greater than 0
 		add = i++;//storing first value and advancing the counter
 		while(i < range && !sorted[i++]);//looks for the first non-zero value
+		//once found, i is one over the first non-zero value, so we must decrement it
+		i--;
 		return (add + i)/2; //and returns the average
 	}
 }
