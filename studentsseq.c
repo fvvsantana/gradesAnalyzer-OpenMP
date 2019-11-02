@@ -30,6 +30,7 @@ int main(){
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
 	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
 	fillMeasuresByCountry(measuresByRegion, measuresByCountry, &input, MAX_GRADE);
+	int bestRegion = getBestRegion(measuresByRegion);
 	// Get time
 	clock_t end = clock();
 	// Calculate time spent
@@ -41,6 +42,7 @@ int main(){
 	printMeasuresByCity(measuresByCity, &input);
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);
+	printf("\nMelhor regiao: Regiao %d\n", bestRegion);
 	printf("Time spent: %lf seconds\n", timeSpent);
 
 

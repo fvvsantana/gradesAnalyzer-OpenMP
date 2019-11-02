@@ -28,6 +28,20 @@ int find_max(int* grades, int nStudents){
 	return mx;
 }
 
+// Calculate the position of the maximum value of an array
+int find_pos_of_max_double(double* vet, int size){
+	int max = vet[0];
+	int pos = 0;
+	int i;
+	for(i=1; i<size; i++){
+		if(max < vet[i]){
+			max = vet[i];
+			pos = i;
+		}
+	}
+	return pos;
+}
+
 /*
  * Calculates the median grade of a certain city
  *

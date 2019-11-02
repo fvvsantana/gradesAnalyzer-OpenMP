@@ -213,6 +213,11 @@ void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry,
 	//measuresByCountry[4] = calculate_stddev_double(measuresByRegion[4], input->nRegions);
 }
 
+// Get the region that has the best average
+int getBestRegion(double** measuresByRegion){
+    return find_pos_of_max_double(measuresByRegion[3], measuresByRegion[4] - measuresByRegion[3]);
+}
+
 // Print the measures by city
 void printMeasuresByCity(double*** measuresByCity, Input* input){
     int i, j;

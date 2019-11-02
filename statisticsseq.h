@@ -12,6 +12,7 @@ double calculate_stddev(int* grades, int nStudents);
 
 double find_min_double(double* grades, int nStudents);
 double find_max_double(double* grades, int nStudents);
+int find_pos_of_max_double(double* vet, int size);
 double find_median_double(double* grades, int nStudents, int range);
 double calculate_average_double(double* grades, int nStudents);
 double calculate_stddev_double(double* grades, int nStudents);
