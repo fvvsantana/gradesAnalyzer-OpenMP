@@ -28,7 +28,7 @@ int main(){
 	clock_t begin = clock();
 	// Taking measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
-	fillMeasuresByRegion(measuresByCity, measuresByRegion, &input, MAX_GRADE);
+	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
 	fillMeasuresByCountry(measuresByRegion, measuresByCountry, &input, MAX_GRADE);
 	// Get time
 	clock_t end = clock();

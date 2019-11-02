@@ -188,16 +188,14 @@ void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input,
  * Fill the matrix with measures by region. The convention to access the measures
  * is [measureIndex][regionIndex].
 */
-void fillMeasuresByRegion(double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade){
+void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade){
     int j;
     for(j=0; j<input->nRegions; j++){
         measuresByRegion[0][j] = find_min_double(measuresByCity[j][0], input->nCities);
         measuresByRegion[1][j] = find_max_double(measuresByCity[j][1], input->nCities);
-        // This calculation is wrong:
-		//measuresByRegion[2][j] = find_median_double(measuresByCity[j][2], input->nCities, maxGrade+1);
+		measuresByRegion[2][j] = find_median(regions[j][0], (input->nCities) * (input->nStudents), maxGrade+1);
         measuresByRegion[3][j] = calculate_average_double(measuresByCity[j][3], input->nCities);
-        // This calculation is wrong:
-		//measuresByRegion[4][j] = calculate_stddev_double(measuresByCity[j][4], input->nCities);
+		measuresByRegion[4][j] = calculate_stddev(regions[j][0], (input->nCities) * (input->nStudents));
     }
 }
 

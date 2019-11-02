@@ -42,7 +42,7 @@ void freeMeasuresByCity(double*** regions, int nRegions);
 // Fill measures by city
 void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input, int maxGrade);
 // Fill measures by region
-void fillMeasuresByRegion(double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade);
+void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade);
 // Fill measures by country
 void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade);
 
