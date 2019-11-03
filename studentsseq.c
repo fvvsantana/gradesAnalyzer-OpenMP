@@ -44,7 +44,7 @@ int main(){
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);
 	printf("\nMelhor regiao: Regiao %d\n", bestRegion);
-	printf("Melhor cidade: Regiao: %d, Cidade: %d\n", bestCity/input.nCities, bestCity % input.nCities);
+	printf("Melhor cidade: Regiao %d, Cidade %d\n", bestCity/input.nCities, bestCity % input.nCities);
 	printf("Time spent: %lf seconds\n", timeSpent);
 
 
