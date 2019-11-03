@@ -244,6 +244,19 @@ int getBestRegion(double** measuresByRegion){
     return find_pos_of_max_double(measuresByRegion[3], measuresByRegion[4] - measuresByRegion[3]);
 }
 
+int getBestCity(double*** measuresByCity, int nRegions, int nCities){
+	int max_city = find_pos_of_max_double(measuresByCity[0][3], nCities);
+	double max_val = measuresByCity[0][3][max_city];
+	for(int i = 1; i< nRegions; i++){
+		int tmp = find_pos_of_max_double(measuresByCity[i][3], nCities);
+		if(max_val < measuresByCity[i][3][tmp]){
+			max_val = measuresByCity[i][3][tmp];
+			max_city = i * nCities + tmp;
+		}
+	}
+	return max_city;
+}
+
 // Print the measures by city
 void printMeasuresByCity(double*** measuresByCity, Input* input){
     int i, j;
