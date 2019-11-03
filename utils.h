@@ -1,6 +1,10 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#include <stdio.h>
+#include <stdlib.h>
+#include "statisticsseq.h"
+
 typedef struct{
     int nRegions;
     int nCities;
@@ -44,7 +48,7 @@ void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input,
 // Fill measures by region
 void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade);
 // Fill measures by country
-void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade);
+void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade);
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion);
 

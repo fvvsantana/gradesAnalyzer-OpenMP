@@ -1,7 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
 #include "utils.h"
-#include "statisticsseq.h"
 
 
 // Alocate and return a matrix, if error return NULL
@@ -203,14 +200,12 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
  * Fill the array with measures of a country. The convention to access the measures
  * is [measureIndex].
 */
-void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade){
+void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade){
     measuresByCountry[0] = find_min_double(measuresByRegion[0], input->nRegions);
     measuresByCountry[1] = find_max_double(measuresByRegion[1], input->nRegions);
-    // This calculation is wrong:
-	//measuresByCountry[2] = find_median_double(measuresByRegion[2], input->nRegions, maxGrade+1);
+	measuresByCountry[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
     measuresByCountry[3] = calculate_average_double(measuresByRegion[3], input->nRegions);
-    // This calculation is wrong:
-	//measuresByCountry[4] = calculate_stddev_double(measuresByRegion[4], input->nRegions);
+	measuresByCountry[4] = calculate_stddev_country(regions, input->nRegions, input->nCities, input ->nStudents);
 }
 
 // Get the region that has the best average

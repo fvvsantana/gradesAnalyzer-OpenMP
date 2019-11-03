@@ -29,7 +29,7 @@ int main(){
 	// Taking measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
 	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
-	fillMeasuresByCountry(measuresByRegion, measuresByCountry, &input, MAX_GRADE);
+	fillMeasuresByCountry(regions, measuresByRegion, measuresByCountry, &input, MAX_GRADE);
 	int bestRegion = getBestRegion(measuresByRegion);
 	// Get time
 	clock_t end = clock();
@@ -38,7 +38,7 @@ int main(){
 
 
 	// Printing
-	//debugPrintRegions(&input, regions);
+	debugPrintRegions(&input, regions);
 	printMeasuresByCity(measuresByCity, &input);
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);
