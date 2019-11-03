@@ -114,6 +114,28 @@ Region* generateRegions(Input* input, int mod){
     // Return regions array
     return regions;
 }
+
+/*
+ * Allocate an array of pointers to regions and a matrix to each region. Each
+ * element of the array of regions points to a matrix.
+ * Inside each matrix, we'll organize the data in a way that each column
+ * represents a city and each row represents a measure.
+ * In this way, if we attribute the returning structure of this function to a
+ * variable called double*** measuresByCity, the element measuresByCity[i][j][k]
+ * will be a double value that represents the "measure j" of the "city k" in the
+ * "region i".
+ * This manner of organization was chosen with the goal of putting all the
+ * measures of the same type sequentially in the memory. For example, all
+ * averages of cities in a single region will be sequential in the memory. This
+ * is advantageous, because in the next step we'll calculate the average of the
+ * averages of cities in a region to calculate a single average by region. The
+ * fact that the elements are sequential in the memory can improve the use of
+ * cache memory while the calculation of the average.
+ * The same effect of optimization is expected to another measures like minimum
+ * and maximum. But this effect won't be used in the calculation of median and
+ * standard deviation, because we can't easily calculate the standard deviation
+ * of a region using the standard deviation of the cities.
+*/
 // Return an array of regions of size specified in input
 double*** allocateForMeasuresByCity(Input* input, int nMeasures){
     // Array of regions, where a region is basically a matrix
@@ -131,6 +153,7 @@ double*** allocateForMeasuresByCity(Input* input, int nMeasures){
 /*
  * Return a matrix to store the measures of min, max, median, mean and standard
  * deviation by region. Each row is a measure, each column is a region.
+ *
 */
 double** allocateForMeasuresByRegion(Input* input, int nMeasures){
     return matrix_new_double(nMeasures, input->nRegions);
