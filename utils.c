@@ -136,7 +136,6 @@ Region* generateRegions(Input* input, int mod){
  * standard deviation, because we can't easily calculate the standard deviation
  * of a region using the standard deviation of the cities.
 */
-// Return an array of regions of size specified in input
 double*** allocateForMeasuresByCity(Input* input, int nMeasures){
     // Array of regions, where a region is basically a matrix
     double*** regions = (double ***) malloc(sizeof(double**) * input->nRegions);
@@ -153,7 +152,10 @@ double*** allocateForMeasuresByCity(Input* input, int nMeasures){
 /*
  * Return a matrix to store the measures of min, max, median, mean and standard
  * deviation by region. Each row is a measure, each column is a region.
- *
+ * Here again, like explained in the comment of the function
+ * allocateForMeasuresByCity, the measures are in a row because we want them to
+ * be sequential in the memory for cache optimization for the next step. The
+ * next step is calculation of measures by country.
 */
 double** allocateForMeasuresByRegion(Input* input, int nMeasures){
     return matrix_new_double(nMeasures, input->nRegions);
@@ -190,9 +192,11 @@ void freeMeasuresByCity(double*** regions, int nRegions){
  * Fill the regions with taken the measures. The convention to access the measures
  * is measures[regionIndex][measureIndex][cityIndex].
  * This convention was adopted because it will facilitate the next step.
- * The next step is take the measures by region, so we'll need to sum up all the
+ * The next step is to take the measures by region, so we'll need to sum up all the
  * cities from a region. So it's better having the cities sequencially in the
  * memory.
+ * For more explanation about the convention adopted for data storage, read the
+ * comment of the function allocateForMeasuresByCity.
 */
 void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input, int maxGrade){
     int i, j;
@@ -210,6 +214,8 @@ void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input,
 /*
  * Fill the matrix with measures by region. The convention to access the measures
  * is [measureIndex][regionIndex].
+ * For more explanation about the convention adopted for data storage, read the
+ * comment of the function allocateForMeasuresByRegion.
 */
 void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade){
     int j;
@@ -225,6 +231,8 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
 /*
  * Fill the array with measures of a country. The convention to access the measures
  * is [measureIndex].
+ * For more explanation about the convention adopted for data storage, read the
+ * comment of the function allocateForMeasuresByCountry.
 */
 void fillMeasuresByCountry(double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade){
     measuresByCountry[0] = find_min_double(measuresByRegion[0], input->nRegions);
