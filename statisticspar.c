@@ -171,17 +171,21 @@ double find_max_double(double* grades, int nStudents){
  *
  * The function returns double in case the amount of students is even, in which case an average will be returned.
  */
-double find_median_double(double* grades, int nStudents, int range){
+double find_median_country(int*** grades,int nRegions, int nCities, int nStudents, int range){
 	//Instead of sorting the array, we count how many of each grade are there, and parsing that array instead;
 	//Making the complexity be O(n) instead of O(n*log(n))
 	int sorted[range];
-	int count = 0,i, index = nStudents/2; //the index of the median, should nStudents be odd
+	int count = 0, i, j, k, index = (nRegions * nCities * nStudents)/2; //the index of the median, should nStudents be odd
 	double add;
 	for(i=0;i<range;i++){
 		sorted[i] = 0;
 	}
-	for(i = 0; i < nStudents; i++){
-		sorted[(int) grades[i]] ++;//counts how many of a given grade there are.
+	for(i = 0; i < nRegions; i++){
+		for(j = 0; j < nCities; j++){
+			for(k = 0; k < nStudents; k++){
+				sorted[grades[i][j][k]] ++;//counts how many of a given grade there are.
+			}
+		}
 	}
 
 	i = 0;
@@ -208,6 +212,8 @@ double find_median_double(double* grades, int nStudents, int range){
 		//otherwise, the first value is the current i, and the next value is the first bucket greater than 0
 		add = i++;//storing first value and advancing the counter
 		while(i < range && !sorted[i++]);//looks for the first non-zero value
+		//i is one over the desired value
+		i--;
 		return (add + i)/2; //and returns the average
 	}
 }
@@ -233,18 +239,30 @@ double calculate_average_double(double* grades, int nStudents){
  *
  * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
-double calculate_stddev_double(double* grades, int nStudents){
-	double sum = 0, avg = 0;
-	if(nStudents <= 0) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
+double calculate_stddev_country(int*** grades, int nRegions, int nCities, int nStudents){
+	if(nStudents <= 1) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
+    double sum = 0, avg = 0;
 	#pragma omp parallel for reduction(+: avg)
-    for(int i = 0; i<nStudents; i++){
-		avg += grades[i];
+    for(int i = 0; i<nRegions; i++){
+        #pragma omp parallel for reduction(+: avg)
+        for(int j = 0; j<nCities; j++){
+            #pragma omp parallel for reduction(+: avg)
+            for(int k = 0; k<nStudents; k++){
+                avg += grades[i][j][k];
+            }
+        }
+    }
+	avg /= (nRegions * nCities * nStudents);
+    #pragma omp parallel for reduction (+: sum)
+	for(int i = 0; i < nRegions; i++){
+        #pragma omp parallel for reduction (+: sum)
+		for(int j = 0; j < nCities; j++){
+            #pragma omp parallel for reduction (+: sum)
+			for(int k = 0; k < nStudents; k++){
+				sum += (grades[i][j][k] - avg)*(grades[i][j][k] - avg);
+			}
+		}
 	}
-	avg /= nStudents;
-    #pragma omp parallel for reduction(+: sum)
-	for(int i = 0; i < nStudents; i++){
-		sum += (grades[i] - avg)*(grades[i] - avg);
-	}
-	sum /= (nStudents - 1);
+	sum /= (nRegions * nCities * nStudents - 1);
 	return sqrt(sum);
 }
