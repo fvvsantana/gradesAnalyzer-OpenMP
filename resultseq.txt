@@ -1,0 +1,43 @@
+gcc studentsseq.c utils.c statisticsseq.c -g -o studentsseq -lm -fopenmp
+gcc studentsseq.c utils.c statisticsseq.c -g -o studentsseq -lm -fopenmp
+gcc studentspar.c utilspar.c statisticspar.c -g -o studentspar -lm -fopenmp
+./studentsseq < input.in
+17	78	99	65	87	61	
+21	46	91	100	7	31	
+14	63	42	72	78	68	
+9	100	68	84	20	2	
+
+29	79	62	69	53	94	
+84	70	72	82	35	58	
+8	22	4	100	21	78	
+30	1	6	39	73	85	
+
+73	48	84	6	32	3	
+8	61	48	70	97	1	
+29	80	71	0	28	72	
+25	36	60	96	1	48	
+
+Reg 0 - Cid 0: menor: 17, maior: 99, mediana: 71.50, media: 67.83 e DP: 28.57
+Reg 0 - Cid 1: menor: 7, maior: 100, mediana: 38.50, media: 49.33 e DP: 38.07
+Reg 0 - Cid 2: menor: 14, maior: 78, mediana: 65.50, media: 56.17 e DP: 24.05
+Reg 0 - Cid 3: menor: 2, maior: 100, mediana: 44.00, media: 47.17 e DP: 41.99
+
+Reg 1 - Cid 0: menor: 29, maior: 94, mediana: 65.50, media: 64.33 e DP: 22.36
+Reg 1 - Cid 1: menor: 35, maior: 84, mediana: 71.00, media: 66.83 e DP: 18.18
+Reg 1 - Cid 2: menor: 4, maior: 100, mediana: 21.50, media: 38.83 e DP: 40.10
+Reg 1 - Cid 3: menor: 1, maior: 85, mediana: 34.50, media: 39.00 e DP: 34.31
+
+Reg 2 - Cid 0: menor: 3, maior: 84, mediana: 40.00, media: 41.00 e DP: 33.68
+Reg 2 - Cid 1: menor: 1, maior: 97, mediana: 54.50, media: 47.50 e DP: 37.04
+Reg 2 - Cid 2: menor: 0, maior: 80, mediana: 50.00, media: 46.67 e DP: 32.20
+Reg 2 - Cid 3: menor: 1, maior: 96, mediana: 42.00, media: 44.33 e DP: 32.40
+
+Reg 0: menor: 2, maior: 100, mediana: 64.00, media: 55.12 e DP: 32.70
+Reg 1: menor: 1, maior: 100, mediana: 60.00, media: 52.25 e DP: 31.18
+Reg 2: menor: 0, maior: 97, mediana: 48.00, media: 44.88 e DP: 31.70
+
+Brasil: menor: 0, maior: 100, mediana: 59.00, media: 50.75 e DP: 31.72
+
+Melhor regiao: Regiao 0
+Melhor cidade: Regiao 0, Cidade 0
+Time spent: 0.000019 seconds

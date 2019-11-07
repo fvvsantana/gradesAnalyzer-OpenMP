@@ -47,6 +47,7 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
 void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade);
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion);
+int getBestCity(double*** measuresByCity, int nRegions, int nCities);
 
 // Print the measures by city
 void printMeasuresByCity(double*** measuresByCity, Input* input);

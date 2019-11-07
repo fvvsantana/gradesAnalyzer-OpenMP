@@ -3,7 +3,8 @@
 #include <omp.h>
 #include <math.h>
 #include <time.h>
-#include "utils.h"
+//#include "utils.h"
+#include "utilspar.h"
 #include "statisticspar.h"
 
 #define MAX_GRADE 100

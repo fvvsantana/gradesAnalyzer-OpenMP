@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <omp.h>
 #include "utilspar.h"
-#include "statisticsseq.h"
+#include "statisticspar.h"
 
 
 // Alocate and return a matrix, if error return NULL
@@ -178,7 +178,7 @@ void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input,
         int i, j;
         #pragma omp for
         for(i=0; i<input->nRegions; i++){
-            #pragma omp parallel for 
+            #pragma omp parallel for
             for(j=0; j<input->nCities; j++){
                 #pragma omp parallel sections
                 {
@@ -219,7 +219,7 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
             {
                 #pragma omp section
                 {
-                    measuresByRegion[0][j] = find_min_double(measuresByCity[j][0], input->nCities); 
+                    measuresByRegion[0][j] = find_min_double(measuresByCity[j][0], input->nCities);
                 }
                 #pragma omp section
                 {
@@ -254,6 +254,19 @@ void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* m
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion){
     return find_pos_of_max_double(measuresByRegion[3], measuresByRegion[4] - measuresByRegion[3]);
+}
+
+int getBestCity(double*** measuresByCity, int nRegions, int nCities){
+	int max_city = find_pos_of_max_double(measuresByCity[0][3], nCities);
+	double max_val = measuresByCity[0][3][max_city];
+	for(int i = 1; i< nRegions; i++){
+		int tmp = find_pos_of_max_double(measuresByCity[i][3], nCities);
+		if(max_val < measuresByCity[i][3][tmp]){
+			max_val = measuresByCity[i][3][tmp];
+			max_city = i * nCities + tmp;
+		}
+	}
+	return max_city;
 }
 
 // Print the measures by city
