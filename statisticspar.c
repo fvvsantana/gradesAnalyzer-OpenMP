@@ -2,6 +2,79 @@
 #include "statisticspar.h"
 
 /*
+ * Trabalho desenvolvido por:
+ * Bruno Piazera Larsen, 9283872
+ * Flavio Vinicius Vieira Santana, 9866552
+ * Lucas Nobuyuki Takahashi, 10295670
+ * Mateus Castilho Leite, 9771550
+ * Vinicius Henrique Borges, 9771546
+ *
+ *
+ * PCAM:
+ * Particionamento:
+ * Será feito um particionamento fino, por função e por dados. Haverão R*C*A*5
+ * tarefas para o calculo de medidas por cidade, onde R é o número de Regiões,
+ * C é o número de cidades por região e A é o número de alunos por cidade e 5
+ * o número de medidas a serem calculadas.  * Livremente falando, cada uma
+ * dessas tarefas contribuirão com uma nota de aluno * para o cálculo da
+ * medida a que lhes foi atribuída.
+ * Analogamente parte das tarefas serão reaproveitadas para o cálculo das medidas
+ * maior, menor, média aritmética, por região e por país, nas etapas seguintes. Para
+ * o cálculo de mediana e desvio padrão e por pais serão geradas tarefas que poderam
+ * trabalhar em paralelo desde do inicio do calculo de medidas.
+ * Também haverá uma tarefa que imprimirá todos os resultados na tela.
+ *
+ * Comunicação:
+ * Aqui é necessário analisar as dependências entre os dados:
+ * média aritmética cidades <- média aritmética região <- média aritmética país
+ * maior valor cidades <- maior valor região <- maior valor país
+ * menor valor cidades <- menor valor região <- menor valor país
+ * mediana cidada
+ * mediana região
+ * mediana país
+ * desvio cidada
+ * desvio região
+ * desvio país
+ * coeficiente de variância cidada
+ * coeficiente de variância região
+ * coeficiente de variância país
+ *
+ * Onde A <- B indica que a operação B depende o resultado da operação A.
+ * Assim podemos executar as medianas, desvios e coeficientes podem ser executadas em paralelo
+ * porém a média,maior e menor são dependentes e criam uma fila onde o resultado de um é passado para o proximo.
+ *
+ * Quando uma medida X for calculada para as cidades, regiões ou país o resultado
+ * será passado para a tarefa que imprime os resultados.
+ *
+ * Quanto à parte mais fina do particionamento, as m tarefas de uma coluna de M
+ * conversarão entre si para o cálculo da medida. Por exemplo, para o cálculo da
+ * média para a primeira coluna de M, os elementos da coluna farão uma soma em
+ * árvore e o resultado dessa soma será dividido pelo número de elementos por
+ * uma das threads. O mesmo tipo de otimização será feito para as outras
+ * medidas.
+ *
+ * Aglomeração:
+ * Aglomeraremos as tarefas da seguinte forma:
+ * as tarefas de calculo da média da cidade, maior da cidade, menor da cidade,
+ * as medianas, desvios e coeficientes podem cada um ser uma tarefa que podem ser
+ * executadas de forma idependente.
+ * Já a média de região, maior de região, menor de região seram cada uma tarefa que
+ * depende do resultado das tarefas média,maior,menor da cidade, e podem ser executados
+ * concorrentemente.
+ * As 3 ultimas tarefas, média do país, maior do país, menor do país serão feitas em
+ * paralelo entre si.
+ * Quando essas tarefas acabam além de enviar os dados para as tarefas que necessitam
+ * dos dados elas também vão enviar o resultado para a tarefa que vai imprimir o
+ * resultado.
+ *
+ * Mapeamento:
+ * O mapeamento vai ser feito x threads, sendo x a quantidade de processadores na maquina
+ * para então distribuir nela as tarefas que devem ser feitas. Respeitando a ordem da
+ * comunicação entre os processos
+ *
+ */
+
+/*
  * Calculates the minimum grade of a certain city
  *
  * The algorithm used iterates through the array, storing the current minimum value untill the end of the array, and returning this
