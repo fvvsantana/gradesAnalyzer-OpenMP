@@ -1,16 +1,15 @@
 all:
-	gcc studentsseq.c utils.c statisticsseq.c -g -o studentsseq -lm -fopenmp
-	gcc studentspar.c utilspar.c statisticspar.c -g -o studentspar -lm -fopenmp
+	gcc studentsseq.c utils.c statisticsseq.c -g -o execseq -lm -fopenmp
+	gcc studentspar.c utilspar.c statisticspar.c -g -o execpar -lm -fopenmp
 
+execseq:
+	gcc studentsseq.c utils.c statisticsseq.c -g -o execseq -lm -fopenmp
 
-seq:
-	gcc studentsseq.c utils.c statisticsseq.c -g -o studentsseq -lm -fopenmp
+runseq: execseq
+	./execseq < input.in
 
-runseq: all
-	./studentsseq < input.in
+execpar:
+	gcc studentspar.c utilspar.c statisticspar.c -g -o execpar -lm -fopenmp
 
-par:
-	gcc studentspar.c utilspar.c statisticspar.c -g -o studentspar -lm -fopenmp
-
-runpar:
-	./studentspar < input.in
+runpar: execpar
+	./execpar < input.in
