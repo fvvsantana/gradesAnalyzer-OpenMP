@@ -173,36 +173,35 @@ void freeMeasuresByCity(double*** regions, int nRegions){
  * memory.
 */
 void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input, int maxGrade){
-    #pragma omp parallel
-    {
-        int i, j;
-        #pragma omp for
-        for(i=0; i<input->nRegions; i++){
-            #pragma omp parallel for
-            for(j=0; j<input->nCities; j++){
-                #pragma omp parallel sections
-                {
-                    #pragma omp section
-                    {
-                        measuresByCity[i][0][j] = find_min(regions[i][j], input->nStudents);
-                    }
-                    #pragma omp section
-                    {
-                        measuresByCity[i][1][j] = find_max(regions[i][j], input->nStudents);
-                    }
-                    #pragma omp section
-                    {
-                        measuresByCity[i][2][j] = find_median(regions[i][j], input->nStudents, maxGrade+1);
-                    }
-                    #pragma omp section
-                    {
-                        measuresByCity[i][3][j] = calculate_average(regions[i][j], input->nStudents);
-                    }
-                }
-                measuresByCity[i][4][j] = calculate_stddev(regions[i][j], input->nStudents);
-            }
-        }
-    }
+	#pragma omp parallel for
+	for(int i=0; i<input->nRegions; i++){
+		#pragma omp parallel for
+		for(int j=0; j<input->nCities; j++){
+			#pragma omp parallel sections
+			{
+				#pragma omp section
+				{
+					measuresByCity[i][0][j] = find_min(regions[i][j], input->nStudents);
+				}
+				#pragma omp section
+				{
+					measuresByCity[i][1][j] = find_max(regions[i][j], input->nStudents);
+				}
+				#pragma omp section
+				{
+					measuresByCity[i][2][j] = find_median(regions[i][j], input->nStudents, maxGrade+1);
+				}
+				#pragma omp section
+				{
+					measuresByCity[i][3][j] = calculate_average(regions[i][j], input->nStudents);
+				}
+				#pragma omp section
+				{
+					measuresByCity[i][4][j] = calculate_stddev(regions[i][j], input->nStudents);
+				}
+			}
+		}
+	}
 }
 
 /*
