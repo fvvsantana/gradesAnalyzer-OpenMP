@@ -1,6 +1,7 @@
-studentsseq
-studentspar
+execpar
+execseq
 .ycm_extra_conf.py
 .gdb_history
 peda-session*
 vgcore*
+.ccls-cache
