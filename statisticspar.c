@@ -35,11 +35,8 @@
  * desvio cidades
  * desvio região
  * desvio país
- * coeficiente de variância cidades
- * coeficiente de variância região
- * coeficiente de variância país
  * Onde A <- B indica que a operação B depende do resultado da operação A.
- * Assim podemos executar as medianas, desvios e coeficientes em paralelo,
+ * Assim podemos executar as medianas e desvios em paralelo,
  * porém as medidas de média, maior e menor são dependentes e criam uma fila
  * onde o resultado de um é passado para o proximo.
  *
@@ -56,7 +53,7 @@
  * Aglomeração:
  * Aglomeraremos as tarefas da seguinte forma:
  * as tarefas de calculo da média da cidade, maior da cidade, menor da cidade,
- * as medianas, desvios e coeficientes podem cada uma ser uma tarefa que podem ser
+ * as medianas e desvios podem cada uma ser uma tarefa que podem ser
  * executadas de forma idependente.
  * Já a média de região, maior de região, menor de região seram cada uma tarefa que
  * depende do resultado das tarefas média,maior,menor da cidade, e podem ser executados
