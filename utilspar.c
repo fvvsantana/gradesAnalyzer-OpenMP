@@ -232,8 +232,11 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
                 {
                     measuresByRegion[3][j] = calculate_average_double(measuresByCity[j][3], input->nCities);
                 }
+                #pragma omp section
+                {
+                    measuresByRegion[4][j] = calculate_stddev(regions[j][0], (input->nCities) * (input->nStudents));
+                }
             }
-            measuresByRegion[4][j] = calculate_stddev(regions[j][0], (input->nCities) * (input->nStudents));
         }
     }
 }
@@ -243,11 +246,29 @@ void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** me
  * is [measureIndex].
 */
 void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade){
-    measuresByCountry[0] = find_min_double(measuresByRegion[0], input->nRegions);
-    measuresByCountry[1] = find_max_double(measuresByRegion[1], input->nRegions);
-	measuresByCountry[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
-    measuresByCountry[3] = calculate_average_double(measuresByRegion[3], input->nRegions);
-	measuresByCountry[4] = calculate_stddev_country(regions, input->nRegions, input->nCities, input ->nStudents);
+    #pragma omp parallel sections
+    {
+        #pragma omp section
+        {
+            measuresByCountry[0] = find_min_double(measuresByRegion[0], input->nRegions); 
+        }
+        #pragma omp section
+        {
+            measuresByCountry[1] = find_max_double(measuresByRegion[1], input->nRegions);
+        }
+        #pragma omp section
+        {
+            measuresByCountry[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
+        }
+        #pragma omp section
+        {
+            measuresByCountry[3] = calculate_average_double(measuresByRegion[3], input->nRegions);
+        }
+        #pragma omp section
+        {
+            measuresByCountry[4] = calculate_stddev_country(regions, input->nRegions, input->nCities, input ->nStudents);
+        }
+    }
 }
 
 // Get the region that has the best average
