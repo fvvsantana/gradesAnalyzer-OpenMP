@@ -11,6 +11,7 @@
  *
  *
  * PCAM:
+ *
  * Particionamento:
  * Será feito um particionamento fino, por função e por dados. Haverão R*C*A*5*3
  * tarefas para o calculo de medidas por cidade, onde R é o número de Regiões,
@@ -20,28 +21,31 @@
  * medida a que lhes foi atribuída.
  * Também haverá uma tarefa que imprimirá todos os resultados na tela.
  *
+ *
  * Comunicação:
  * Para a média aritmética será utilizada uma soma em árvore das tarefas e,
  * por fim, uma divisão pela quantidade total de tarefas.
+ *
  * Para o mínimo e máximo serão feitas comparações em árvore de cada tarefa
  * afim de encontrar o menor ou maior valor do vetor de notas.
+ *
  * As tarefas responsáveis pelo desvio padrão irão se sincronizar com a
  * tarefas das médias ariméticas, e receberão destas os respectivos 
  * resultados. Com cada tarefa tendo seu valor de média arimética e de nota
  * individual, elas realizarão a soma em árvore da diferença entre esses valores
- * elevado ao quadrado, e a última tarefa dividirá o resultado por N-1 e fará a
- * raiz quadrada.
+ * elevado ao quadrado e realizarão o cálculo do desvio padrão.
+ *
  * Consideramos que não é possível particionar o cálculo da mediana eficientemente,
  * por conta disso, optamos por realizá-la em uma única tarefa; portanto, essa
- * tarefa não produzirá comunicação com nenhuma outra. Apesar disso, haverão
- * R*C + R + 1 tarefas de mediana.
+ * tarefa não realizará comunicação com nenhuma outra. Apesar disso, haverão
+ * R*C + R + 1 tarefas independentes de mediana.
+ *
  * Por fim, as tarefas que contêm os resultados se comunicarão com a tarefa
  * que imprime os valores.
  *
  *
- *
- *
- * Aqui é necessário analisar as dependências entre os dados:
+ * Aglomeração:
+ * Aqui é necessário analisar as sequência de cálculo dos dados:
  * média aritmética cidades <- média aritmética região <- média aritmética país
  * maior valor cidades <- maior valor região <- maior valor país
  * menor valor cidades <- menor valor região <- menor valor país
@@ -51,43 +55,45 @@
  * desvio cidades
  * desvio região
  * desvio país
- * Onde A <- B indica que a operação B depende do resultado da operação A.
- * Assim podemos executar as medianas e desvios em paralelo,
- * porém as medidas de média, maior e menor são dependentes e criam uma fila
- * onde o resultado de um é passado para o proximo.
+ * Onde A <- B indica que a operação B será executada após obter o resultado da operação A.
+ * Assim podemos executar as medianas e desvios em paralelo, porém as medidas de média,
+ * maior e menor são dependentes e criam uma fila onde o resultado de um é passado para o proximo.
+ * Optamos por seguir essa sequência por considerarmos que, nas 3 primeiras medidas, é mais
+ * vantajoso realizar uma execução sequencial do que recalcular os mesmos dados paralelamente.
  *
- * Quando uma medida X for calculada para as cidades, regiões ou país o resultado
- * será passado para a tarefa que imprime os resultados.
+ * Devido às dependências existentes no cálculo da média arimética, elas serão
+ * aglomeradas no mesmo processo que executará os cálculos de forma sequencial
+ * (regiões após cidades, e país após regiões). Contudo, a média aritmética das
+ * cidades poderá ser paralelizado internamente utilizando uma soma em árvore,
+ * o mesmo se aplica às regiões a ao país.
  *
- * Quanto à parte mais fina do particionamento, as m tarefas de uma coluna de M
- * conversarão entre si para o cálculo da medida. Por exemplo, para o cálculo da
- * média para a primeira coluna de M, os elementos da coluna farão uma soma em
- * árvore e o resultado dessa soma será dividido pelo número de elementos por
- * uma das tarefas. O mesmo tipo de otimização será feito para as outras
- * medidas.
+ * A mesma aglomeração utilizada nas tarefas de média aritmética também será utilizada
+ * nas tarefas de maiores e menores notas. Contudo, utilizando comparações em árvore de maior/menor.
  *
- * Aglomeração:
- * Para esse programa vai ser usado uma máquina com memória compartilhada, e openMP.
- * Aglomeraremos as tarefas da seguinte forma:
- * as tarefas de média irão ser aglomeradas de forma a dividir os dados para cada processador
- * para então fazer a soma em arvore.
- * Para mediana ficaria igual ao especificado na comunicação.
- * Maior e menor terão uma aglomeração igual da média.
- * O desvio padrão não tera a sincronização com os resultados da média arimética pois
- * consideramos que a replicação da computação seria menos custoso do que a sincronização
- * entre os thread visto que o openMP não facilita sinronização entre sections específicas
- *
- * Analogamente, parte das tarefas serão reaproveitadas para o cálculo das medidas
- * maior, menor, média aritmética, por região e por país, nas etapas seguintes. Para
- * o cálculo de mediana e desvio padrão por país serão geradas tarefas que poderão
- * trabalhar em paralelo desde do inicio do calculo de medidas.
- *
- * Mapeamento:
- * O mapeamento vai ser feito x threads, sendo x a quantidade de processadores na maquina
- * para então distribuir nela as tarefas que devem ser feitas. Respeitando a ordem da
- * comunicação entre os processos
- *
- */
+ * As tarefas da mediana serão aglomeradas em 3 processos: por cidades, por regiões
+ * e pelo país. Cada processo executará em paralelo em processadores distintos, porém seus
+* cálculos internos serão feitos de forma sequencial, como mencionado na comunicação.
+*
+* As tarefas de desvio padrão também serão aglomeradas em 3 processos principais que serão
+* executados em paralelo (processadores distintos). Porém, diferentemente da mediana, é possível paralelizar o cálculo
+* do desvio utilizando uma soma em árvore afim de obter as médias. As médias calculadas pelos
+* processos de média arimética não serão reutilizadas neste cálculo pois não há garantia de que
+* eles terminem sua execução antes das outras, de forma que o cálculo do desvio padrão, que já é
+* o mais demorado do programa, poderia ser severamente prejudicado. Além disso, o OpenMP não permite
+* uma sincronização fina entre sections específicas.
+*
+*
+* Mapeamento:
+* Os processos que realizarão redução em árvore serão mapeados para o mesmo processador afim de
+* minimizar os custos da comunicação, nessa regra se encaixam os processos de média aritmética,
+* de maior nota e menor nota.
+*
+* Os processos que serão executados independentemente de forma paralela poderão ser mapeados
+* em processadores distintos, nessa regra se encaixam os processos de mediana e desvio padrão.
+* No caso do desvio padrão, apesar de existirem comunicações de redução, consideramos que essas
+* serão irrelevantes perto do benefício de se paralelizar o cálculo entre cidades, regiões e país.
+*
+*/
 
 /*
  * Calculates the minimum grade of a certain city
@@ -97,7 +103,7 @@
  */
 int find_min(int* grades, int nStudents){
 	int mn = grades[0];
-    #pragma omp parallel for reduction(min: mn)
+	#pragma omp parallel for reduction(min: mn)
 	for(int i = 1; i<nStudents; i++){
 		if(mn > grades[i]) mn = grades[i];
 	}
@@ -112,7 +118,7 @@ int find_min(int* grades, int nStudents){
  */
 int find_max(int* grades, int nStudents){
 	int mx = grades[0];
-    #pragma omp parallel for reduction(max: mx)
+	#pragma omp parallel for reduction(max: mx)
 	for(int i=1;i<nStudents;i++){
 		if(mx < grades[i]) mx = grades[i];
 	}
@@ -191,7 +197,7 @@ double find_median(int* grades, int nStudents, int range){
  */
 double calculate_average(int* grades, int nStudents){
 	double sum = 0;
-    #pragma omp parallel for reduction(+: sum)
+	#pragma omp parallel for reduction(+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += grades[i];
 	}
@@ -209,11 +215,11 @@ double calculate_stddev(int* grades, int nStudents){
 	double sum = 0, avg = 0;
 	if(nStudents <= 0) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
 	#pragma omp parallel for reduction(+: avg)
-    for(int i = 0; i<nStudents; i++){
+	for(int i = 0; i<nStudents; i++){
 		avg += grades[i];
 	}
 	avg /= nStudents;
-    #pragma omp parallel for reduction(+: sum)
+	#pragma omp parallel for reduction(+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += (grades[i] - avg)*(grades[i] - avg);
 	}
@@ -229,7 +235,7 @@ double calculate_stddev(int* grades, int nStudents){
  */
 double find_min_double(double* grades, int nStudents){
 	double mn = grades[0];
-    #pragma omp parallel for reduction(min: mn)
+	#pragma omp parallel for reduction(min: mn)
 	for(int i = 1; i<nStudents; i++){
 		if(mn > grades[i]) mn = grades[i];
 	}
@@ -244,7 +250,7 @@ double find_min_double(double* grades, int nStudents){
  */
 double find_max_double(double* grades, int nStudents){
 	double mx = grades[0];
-    #pragma omp parallel for reduction(max: mx)
+	#pragma omp parallel for reduction(max: mx)
 	for(int i=1;i<nStudents;i++){
 		if(mx < grades[i]) mx = grades[i];
 	}
@@ -313,7 +319,7 @@ double find_median_country(int*** grades,int nRegions, int nCities, int nStudent
  */
 double calculate_average_double(double* grades, int nStudents){
 	double sum = 0;
-    #pragma omp parallel for reduction (+: sum)
+	#pragma omp parallel for reduction (+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += grades[i];
 	}
@@ -329,17 +335,17 @@ double calculate_average_double(double* grades, int nStudents){
  */
 double calculate_stddev_country(int*** grades, int nRegions, int nCities, int nStudents){
 	if(nStudents <= 1) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
-    double sum = 0, avg = 0;
+	double sum = 0, avg = 0;
 	#pragma omp parallel for reduction(+: avg)
-    for(int i = 0; i<nRegions; i++){
+	for(int i = 0; i<nRegions; i++){
         #pragma omp parallel for reduction(+: avg)
-        for(int j = 0; j<nCities; j++){
+		for(int j = 0; j<nCities; j++){
             #pragma omp parallel for reduction(+: avg)
-            for(int k = 0; k<nStudents; k++){
-                avg += grades[i][j][k];
-            }
-        }
-    }
+			for(int k = 0; k<nStudents; k++){
+				avg += grades[i][j][k];
+			}
+		}
+	}
 	avg /= (nRegions * nCities * nStudents);
     #pragma omp parallel for reduction (+: sum)
 	for(int i = 0; i < nRegions; i++){

@@ -11,6 +11,12 @@ typedef struct{
 // This typedef was created in order to simplify syntax
 typedef int** Region;
 
+typedef struct{
+	double*** city;
+	double** region;
+	double* country; 
+} Measures;
+
 // Read input from stdin and store it in data
 void readInput(Input* data);
 
@@ -39,12 +45,13 @@ void freeRegions(Region* regions, int nRegions);
 // Free array allocated by allocateForMeasuresByCity
 void freeMeasuresByCity(double*** regions, int nRegions);
 
-// Fill measures by city
-void fillMeasuresByCity(Region* regions, double*** measuresByCity, Input* input, int maxGrade);
-// Fill measures by region
-void fillMeasuresByRegion(Region* regions, double*** measuresByCity, double** measuresByRegion, Input* input, int maxGrade);
-// Fill measures by country
-void fillMeasuresByCountry(Region* regions, double** measuresByRegion, double* measuresByCountry, Input* input, int maxGrade);
+// Fill the measures struct with the minimum grades
+void fill_min(Region* regions, Measures* measures, Input* input, int maxGrade);
+// Fill the measures struct with the maximum grades
+void fill_max(Region* regions, Measures* measures, Input* input, int maxGrade);
+// Fill the measures struct with the median grades
+void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade);
+
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion);
 int getBestCity(double*** measuresByCity, int nRegions, int nCities);

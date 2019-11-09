@@ -2,7 +2,6 @@
 #include <stdlib.h>
 #include <omp.h>
 #include <math.h>
-//#include "utils.h"
 #include "utilspar.h"
 #include "statisticspar.h"
 
@@ -13,36 +12,61 @@ void debugPrintRegions(Input* input, Region* regions);
 
 int main(){
 	int i, j;
-    // Read input
-    Input input;
-    readInput(&input);
+	// Read input
+	Input input;
+	readInput(&input);
 
 	// Allocation
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
-	double*** measuresByCity = allocateForMeasuresByCity(&input, NMEASURES);
-	double** measuresByRegion = allocateForMeasuresByRegion(&input, NMEASURES);
-	double* measuresByCountry = allocateForMeasuresByCountry(NMEASURES);
+	Measures measures;
+	measures.city = allocateForMeasuresByCity(&input, NMEASURES);
+	measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
+	measures.country = allocateForMeasuresByCountry(NMEASURES);
 
 
 	// Get time
 	double begin = omp_get_wtime();
+
 	// Taking measures
-	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
-	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
-	fillMeasuresByCountry(regions, measuresByRegion, measuresByCountry, &input, MAX_GRADE);
-	int bestRegion = getBestRegion(measuresByRegion);
-    int bestCity = getBestCity(measuresByCity, input.nRegions, input.nCities);
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			fill_min(regions, &measures, &input, MAX_GRADE);
+		}
+		#pragma omp section
+		{
+			fill_max(regions, &measures, &input, MAX_GRADE);
+		}
+		#pragma omp section
+		{
+			fill_median(regions, &measures, &input, MAX_GRADE);
+		}
+	}
+	
+	int bestRegion, bestCity;
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			bestRegion = getBestRegion(measures.region);
+		}
+		#pragma omp section
+		{
+			bestCity = getBestCity(measures.city, input.nRegions, input.nCities);
+		}
+	}
+
 	// Get time
 	double end = omp_get_wtime();
 	// Calculate time spent
 	double timeSpent = end - begin;
 
-
 	// Printing
 	debugPrintRegions(&input, regions);
-	printMeasuresByCity(measuresByCity, &input);
-	printMeasuresByRegion(measuresByRegion, &input);
-	printMeasuresByCountry(measuresByCountry);
+	printMeasuresByCity(measures.city, &input);
+	printMeasuresByRegion(measures.region, &input);
+	printMeasuresByCountry(measures.country);
 	printf("\nMelhor regiao: Regiao %d\n", bestRegion);
 	printf("Melhor cidade: Regiao %d, Cidade %d\n", bestCity/input.nCities, bestCity % input.nCities);
 	printf("Time spent: %lf seconds\n", timeSpent);
@@ -51,13 +75,13 @@ int main(){
 	// Free array of regions
 	freeRegions(regions, input.nRegions);
 	// Free array of regions for result
-	freeMeasuresByCity(measuresByCity, input.nRegions);
+	freeMeasuresByCity(measures.city, input.nRegions);
 	// Free matrix of measures by region
-    matrix_delete_double(measuresByRegion);
+	matrix_delete_double(measures.region);
 	// Free array of measures by country
-	free(measuresByCountry);
+	free(measures.country);
 
-    return 0;
+	return 0;
 }
 
 // Print randomly generated regions
