@@ -23,6 +23,8 @@ int main(){
 	measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 	measures.country = allocateForMeasuresByCountry(NMEASURES);
 
+    //enable nested parallel
+    omp_set_nested(1);
 
 	// Get time
 	double begin = omp_get_wtime();
@@ -30,6 +32,10 @@ int main(){
 	// Taking measures
 	#pragma omp parallel sections
 	{
+        #pragma omp section
+        {
+            fillStddevByCountry(regions, &measures , &input);
+        }
 		#pragma omp section
 		{
 			fill_min(regions, &measures, &input, MAX_GRADE);
@@ -38,12 +44,20 @@ int main(){
 		{
 			fill_max(regions, &measures, &input, MAX_GRADE);
 		}
+        #pragma omp section
+        {
+            fillAvgByCityRegionCountry(regions , &measures , &input);
+        }
+        #pragma omp section
+        {
+            fillStddevByCityAndRegion(regions , &measures , &input);
+        }
 		#pragma omp section
 		{
 			fill_median(regions, &measures, &input, MAX_GRADE);
 		}
 	}
-	
+
 	int bestRegion, bestCity;
 	#pragma omp parallel sections
 	{

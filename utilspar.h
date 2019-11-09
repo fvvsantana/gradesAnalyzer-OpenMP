@@ -8,14 +8,14 @@ typedef struct{
     int seed;
 } Input;
 
+typedef struct{
+  double*** city;
+  double** region;
+  double* country;
+} Measures;
+
 // This typedef was created in order to simplify syntax
 typedef int** Region;
-
-typedef struct{
-	double*** city;
-	double** region;
-	double* country; 
-} Measures;
 
 // Read input from stdin and store it in data
 void readInput(Input* data);
@@ -62,5 +62,16 @@ void printMeasuresByCity(double*** measuresByCity, Input* input);
 void printMeasuresByRegion(double** measuresByRegion, Input* input);
 // Print the measures by country
 void printMeasuresByCountry(double* measuresByCountry);
+
+//Fill standard deviation by city and Region
+void fillStddevByCityAndRegion(Region *regions, Measures* measures , Input *input);
+
+//Fill standard deviation by country
+void fillStddevByCountry(Region *regions, Measures *measures , Input *input);
+
+//Fill average by city, Region, and Country
+void fillAvgByCityRegionCountry(Region *regions , Measures *measures, Input *input);
+
+
 
 #endif // UTILSPAR_H
