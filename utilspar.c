@@ -327,7 +327,7 @@ void fillAvgByCityRegionCountry(Region *regions , Measures *measures, Input *inp
         for(int j = 0 ; j < input->nCities ; j++){
             measures->city[i][3][j] = calculate_average(regions[i][j], input->nStudents);
         }
-        measures->region[3][i] = calculate_average_double(measures->city[j][3] , input->nCities);
+        measures->region[3][i] = calculate_average_double(measures->city[i][3] , input->nCities);
     }
     measures->country[3] = calculate_average_double(measures->region[3], input->nRegions);
 }
