@@ -12,19 +12,35 @@
  *
  * PCAM:
  * Particionamento:
- * Será feito um particionamento fino, por função e por dados. Haverão R*C*A*5
+ * Será feito um particionamento fino, por função e por dados. Haverão R*C*A*5*3
  * tarefas para o calculo de medidas por cidade, onde R é o número de Regiões,
  * C é o número de cidades por região, A é o número de alunos por cidade e 5
  * é a quantidade de medidas a serem calculadas. Livremente falando, cada uma
  * dessas tarefas contribuirão com uma nota de aluno para o cálculo da
  * medida a que lhes foi atribuída.
- * Analogamente, parte das tarefas serão reaproveitadas para o cálculo das medidas
- * maior, menor, média aritmética, por região e por país, nas etapas seguintes. Para
- * o cálculo de mediana e desvio padrão por país serão geradas tarefas que poderão
- * trabalhar em paralelo desde do inicio do calculo de medidas.
  * Também haverá uma tarefa que imprimirá todos os resultados na tela.
  *
  * Comunicação:
+ * Para a média aritmética será utilizada uma soma em árvore das tarefas e,
+ * por fim, uma divisão pela quantidade total de tarefas.
+ * Para o mínimo e máximo serão feitas comparações em árvore de cada tarefa
+ * afim de encontrar o menor ou maior valor do vetor de notas.
+ * As tarefas responsáveis pelo desvio padrão irão se sincronizar com a
+ * tarefas das médias ariméticas, e receberão destas os respectivos 
+ * resultados. Com cada tarefa tendo seu valor de média arimética e de nota
+ * individual, elas realizarão a soma em árvore da diferença entre esses valores
+ * elevado ao quadrado, e a última tarefa dividirá o resultado por N-1 e fará a
+ * raiz quadrada.
+ * Consideramos que não é possível particionar o cálculo da mediana eficientemente,
+ * por conta disso, optamos por realizá-la em uma única tarefa; portanto, essa
+ * tarefa não produzirá comunicação com nenhuma outra. Apesar disso, haverão
+ * R*C + R + 1 tarefas de mediana.
+ * Por fim, as tarefas que contêm os resultados se comunicarão com a tarefa
+ * que imprime os valores.
+ *
+ *
+ *
+ *
  * Aqui é necessário analisar as dependências entre os dados:
  * média aritmética cidades <- média aritmética região <- média aritmética país
  * maior valor cidades <- maior valor região <- maior valor país
@@ -51,18 +67,20 @@
  * medidas.
  *
  * Aglomeração:
+ * Para esse programa vai ser usado uma máquina com memória compartilhada, e openMP.
  * Aglomeraremos as tarefas da seguinte forma:
- * as tarefas de calculo da média da cidade, maior da cidade, menor da cidade,
- * as medianas e desvios podem cada uma ser uma tarefa que podem ser
- * executadas de forma idependente.
- * Já a média de região, maior de região, menor de região seram cada uma tarefa que
- * depende do resultado das tarefas média,maior,menor da cidade, e podem ser executados
- * concorrentemente.
- * As 3 ultimas tarefas, média do país, maior do país, menor do país serão feitas em
- * paralelo entre si.
- * Quando essas tarefas acabam além de enviar os dados para as tarefas que necessitam
- * dos dados elas também vão enviar o resultado para a tarefa que vai imprimir o
- * resultado.
+ * as tarefas de média irão ser aglomeradas de forma a dividir os dados para cada processador
+ * para então fazer a soma em arvore.
+ * Para mediana ficaria igual ao especificado na comunicação.
+ * Maior e menor terão uma aglomeração igual da média.
+ * O desvio padrão não tera a sincronização com os resultados da média arimética pois
+ * consideramos que a replicação da computação seria menos custoso do que a sincronização
+ * entre os thread visto que o openMP não facilita sinronização entre sections específicas
+ *
+ * Analogamente, parte das tarefas serão reaproveitadas para o cálculo das medidas
+ * maior, menor, média aritmética, por região e por país, nas etapas seguintes. Para
+ * o cálculo de mediana e desvio padrão por país serão geradas tarefas que poderão
+ * trabalhar em paralelo desde do inicio do calculo de medidas.
  *
  * Mapeamento:
  * O mapeamento vai ser feito x threads, sendo x a quantidade de processadores na maquina
