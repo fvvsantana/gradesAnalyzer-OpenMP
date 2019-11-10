@@ -176,7 +176,7 @@ void fill_min(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
-		#pragma omp parallel for
+		//#pragma omp parallel for
 		for(int j=0; j<input->nCities; j++){
 			measures->city[i][0][j] = find_min(regions[i][j], input->nStudents);
 		}
@@ -189,7 +189,7 @@ void fill_max(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
-		#pragma omp parallel for
+		//#pragma omp parallel for
 		for(int j=0; j<input->nCities; j++){
 			measures->city[i][1][j] = find_max(regions[i][j], input->nStudents);
 		}
@@ -207,20 +207,21 @@ void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade
 		{
 			#pragma omp parallel for
 			for(int i=0; i<input->nRegions; i++){
-				#pragma omp parallel for
+				//#pragma omp parallel for
 				for(int j=0; j<input->nCities; j++){
 					measures->city[i][2][j] = find_median(regions[i][j], input->nStudents, maxGrade+1);
 				}
-			}
-		}
-		// median by regions
-		#pragma omp section
-		{
-			#pragma omp parallel for
-			for(int i=0; i<input->nRegions; i++){
 				measures->region[2][i] = find_median(regions[i][0], (input->nCities) * (input->nStudents), maxGrade+1);
 			}
 		}
+		// median by regions
+		//#pragma omp section
+		//{
+		//	//#pragma omp parallel for
+		//	for(int i=0; i<input->nRegions; i++){
+		//		measures->region[2][i] = find_median(regions[i][0], (input->nCities) * (input->nStudents), maxGrade+1);
+		//	}
+		//}
 		// median by country
 		#pragma omp section
 		{
@@ -291,43 +292,57 @@ void printMeasuresByCountry(double* measuresByCountry){
 		  );
 }
 
-//Fill standard deviation by city and Region
-void fillStddevByCityAndRegion(Region *regions, Measures* measures , Input *input){
-    #pragma omp parallel sections
+//Fill average and stadard deviation by city, Region, and Country
+void fillAvgStdDedByCityRegionCountry(Region *regions , Measures *measures, Input *input){
+    // calculate avg of cities
+    #pragma parallel for
+    for(int i = 0 ; i < input->nRegions ; i++){
+        //#pragma parallel for
+        for(int j = 0 ; j < input->nCities ; j++){
+            measures->city[i][3][j] = calculate_average(regions[i][j], input->nStudents);
+        }
+    }
+    // calculate avg of regions and standard deviation of cities;
+    #pragma omp parallel sections num_threads(2)
     {
+        // calculate avg of regions
         #pragma omp section
         {
             #pragma omp parallel for
             for(int i = 0 ; i < input->nRegions ; i++){
-                for (int j = 0; j < input->nCities ; j++){
-                    measures->city[i][4][j] = calculate_stddev(regions[i][j], input->nStudents);
-                }
+                measures->region[3][i] = calculate_average_double(measures->city[i][3] , input->nCities);
             }
         }
+        // calculate standard deviation of cities
         #pragma omp section
         {
             #pragma omp parallel for
-            for(int j = 0 ; j < input->nRegions; j++){
-                measures->region[4][j] = calculate_stddev(regions[j][0], (input->nCities) * (input->nStudents));
+            for(int i = 0 ; i < input->nRegions ; i++){
+                //#pragma parallel for
+                for(int j = 0 ; j < input->nCities ; j++){
+                    measures->city[i][4][j] = calculate_stddev(regions[i][j] , measures->city[i][3][j], input->nStudents);
+                }
             }
         }
     }
-}
-
-//Fill standard deviation by country
-void fillStddevByCountry(Region *regions, Measures *measures , Input *input){
-    measures->country[4] = calculate_stddev_country(regions , input->nRegions, input->nCities , input->nStudents);
-}
-
-//Fill average by city, Region, and Country
-void fillAvgByCityRegionCountry(Region *regions , Measures *measures, Input *input){
-    #pragma omp parallel for
-    for(int i = 0 ; i < input->nRegions ; i++){
-        #pragma omp parallel for
-        for(int j = 0 ; j < input->nCities ; j++){
-            measures->city[i][3][j] = calculate_average(regions[i][j], input->nStudents);
+    // calculate avg of country and standard deviation of regions
+    #pragma omp parallel sections num_threads(2)
+    {
+        // calculate standard deviation of regions
+        #pragma omp section
+        {
+            #pragma omp parallel for
+            for(int i = 0 ; i < input->nRegions ; i++){
+                measures->region[4][i] = calculate_stddev(regions[i][0] , measures->region[3][i], input->nStudents * input->nCities);
+            }
         }
-        measures->region[3][i] = calculate_average_double(measures->city[i][3] , input->nCities);
+        // calculate avg of country
+        #pragma omp section
+        {
+            measures->country[3] = calculate_average_double(measures->region[3], input->nRegions);
+        }
     }
-    measures->country[3] = calculate_average_double(measures->region[3], input->nRegions);
+    // calculate standard deviation of country
+    measures->country[4] = calculate_stddev_country(regions,measures->country[3], input->nRegions, input->nCities ,input->nStudents);
+	fprintf(stderr, "media acabou\n");
 }

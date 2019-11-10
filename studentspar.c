@@ -31,30 +31,19 @@ int main(){
 	// Taking measures
 	#pragma omp parallel sections
 	{
-        #pragma omp section
-        {
-            fillStddevByCountry(regions, &measures , &input);
-        }
-		#pragma omp section
-		{
-			fill_min(regions, &measures, &input);
-		}
-		#pragma omp section
-		{
-			fill_max(regions, &measures, &input);
-		}
-        #pragma omp section
-        {
-            fillAvgByCityRegionCountry(regions , &measures , &input);
-        }
-        #pragma omp section
-        {
-            fillStddevByCityAndRegion(regions , &measures , &input);
-        }
 		#pragma omp section
 		{
 			fill_median(regions, &measures, &input, MAX_GRADE);
 		}
+		#pragma omp section
+		{
+		    fillAvgStdDedByCityRegionCountry(regions , &measures , &input);
+		}
+        #pragma omp section
+        {
+			fill_max(regions, &measures, &input, MAX_GRADE);
+		    fill_min(regions, &measures, &input, MAX_GRADE);
+        }
 	}
 
 	int bestRegion, bestCity;

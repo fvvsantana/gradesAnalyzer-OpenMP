@@ -63,14 +63,8 @@ void printMeasuresByRegion(double** measuresByRegion, Input* input);
 // Print the measures by country
 void printMeasuresByCountry(double* measuresByCountry);
 
-//Fill standard deviation by city and Region
-void fillStddevByCityAndRegion(Region *regions, Measures* measures , Input *input);
-
-//Fill standard deviation by country
-void fillStddevByCountry(Region *regions, Measures *measures , Input *input);
-
 //Fill average by city, Region, and Country
-void fillAvgByCityRegionCountry(Region *regions , Measures *measures, Input *input);
+void fillAvgStdDedByCityRegionCountry(Region *regions , Measures *measures, Input *input);
 
 
 

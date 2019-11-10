@@ -103,7 +103,7 @@
  */
 int find_min(int* grades, int nStudents){
 	int mn = grades[0];
-	#pragma omp parallel for reduction(min: mn)
+	//#pragma omp parallel for reduction(min: mn)
 	for(int i = 1; i<nStudents; i++){
 		if(mn > grades[i]) mn = grades[i];
 	}
@@ -118,7 +118,7 @@ int find_min(int* grades, int nStudents){
  */
 int find_max(int* grades, int nStudents){
 	int mx = grades[0];
-	#pragma omp parallel for reduction(max: mx)
+	//#pragma omp parallel for reduction(max: mx)
 	for(int i=1;i<nStudents;i++){
 		if(mx < grades[i]) mx = grades[i];
 	}
@@ -197,7 +197,7 @@ double find_median(int* grades, int nStudents, int range){
  */
 double calculate_average(int* grades, int nStudents){
 	double sum = 0;
-	#pragma omp parallel for reduction(+: sum)
+	//#pragma omp parallel for reduction(+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += grades[i];
 	}
@@ -211,15 +211,10 @@ double calculate_average(int* grades, int nStudents){
  *
  * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
-double calculate_stddev(int* grades, int nStudents){
-	double sum = 0, avg = 0;
+double calculate_stddev(int* grades, double avg, int nStudents){
+	double sum = 0;
 	if(nStudents <= 0) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
-	#pragma omp parallel for reduction(+: avg)
-	for(int i = 0; i<nStudents; i++){
-		avg += grades[i];
-	}
-	avg /= nStudents;
-	#pragma omp parallel for reduction(+: sum)
+	//#pragma omp parallel for reduction(+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += (grades[i] - avg)*(grades[i] - avg);
 	}
@@ -235,7 +230,7 @@ double calculate_stddev(int* grades, int nStudents){
  */
 double find_min_double(double* grades, int nStudents){
 	double mn = grades[0];
-	#pragma omp parallel for reduction(min: mn)
+	//#pragma omp parallel for reduction(min: mn)
 	for(int i = 1; i<nStudents; i++){
 		if(mn > grades[i]) mn = grades[i];
 	}
@@ -250,7 +245,7 @@ double find_min_double(double* grades, int nStudents){
  */
 double find_max_double(double* grades, int nStudents){
 	double mx = grades[0];
-	#pragma omp parallel for reduction(max: mx)
+	//#pragma omp parallel for reduction(max: mx)
 	for(int i=1;i<nStudents;i++){
 		if(mx < grades[i]) mx = grades[i];
 	}
@@ -319,7 +314,7 @@ double find_median_country(int*** grades,int nRegions, int nCities, int nStudent
  */
 double calculate_average_double(double* grades, int nStudents){
 	double sum = 0;
-	#pragma omp parallel for reduction (+: sum)
+	//#pragma omp parallel for reduction (+: sum)
 	for(int i = 0; i < nStudents; i++){
 		sum += grades[i];
 	}
@@ -333,25 +328,14 @@ double calculate_average_double(double* grades, int nStudents){
  *
  * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
-double calculate_stddev_country(int*** grades, int nRegions, int nCities, int nStudents){
+double calculate_stddev_country(int*** grades, double avg, int nRegions, int nCities, int nStudents){
 	if(nStudents <= 1) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
-	double sum = 0, avg = 0;
-	#pragma omp parallel for reduction(+: avg)
-	for(int i = 0; i<nRegions; i++){
-        #pragma omp parallel for reduction(+: avg)
-		for(int j = 0; j<nCities; j++){
-            #pragma omp parallel for reduction(+: avg)
-			for(int k = 0; k<nStudents; k++){
-				avg += grades[i][j][k];
-			}
-		}
-	}
-	avg /= (nRegions * nCities * nStudents);
+	double sum = 0;
     #pragma omp parallel for reduction (+: sum)
 	for(int i = 0; i < nRegions; i++){
-        #pragma omp parallel for reduction (+: sum)
+        //#pragma omp parallel for reduction (+: sum)
 		for(int j = 0; j < nCities; j++){
-            #pragma omp parallel for reduction (+: sum)
+            //#pragma omp parallel for reduction (+: sum)
 			for(int k = 0; k < nStudents; k++){
 				sum += (grades[i][j][k] - avg)*(grades[i][j][k] - avg);
 			}
