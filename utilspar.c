@@ -295,7 +295,7 @@ void printMeasuresByCountry(double* measuresByCountry){
 //Fill average and stadard deviation by city, Region, and Country
 void fillAvgStdDedByCityRegionCountry(Region *regions , Measures *measures, Input *input){
     // calculate avg of cities
-    #pragma parallel for
+    #pragma omp parallel for
     for(int i = 0 ; i < input->nRegions ; i++){
         //#pragma parallel for
         for(int j = 0 ; j < input->nCities ; j++){
