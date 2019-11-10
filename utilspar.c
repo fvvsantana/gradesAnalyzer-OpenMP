@@ -223,6 +223,11 @@ void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade
 {
 	#pragma omp parallel sections
 	{
+		// median by country
+		#pragma omp section
+		{
+			measures->country[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
+		}
 		// median by cities/regions
 		#pragma omp section
 		{
@@ -233,11 +238,6 @@ void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade
 				}
 				measures->region[2][i] = find_median(regions[i][0], (input->nCities) * (input->nStudents), maxGrade+1);
 			}
-		}
-		// median by country
-		#pragma omp section
-		{
-			measures->country[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
 		}
 	}
 }
