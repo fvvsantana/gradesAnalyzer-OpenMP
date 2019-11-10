@@ -25,7 +25,7 @@ int main(){
 
 
 	// Get time
-	clock_t begin = clock();
+	double begin = omp_get_wtime();
 	// Taking measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
 	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
@@ -33,9 +33,9 @@ int main(){
 	int bestRegion = getBestRegion(measuresByRegion);
 	int bestCity = getBestCity(measuresByCity, input.nRegions, input.nCities);
 	// Get time
-	clock_t end = clock();
+	double end = omp_get_wtime();
 	// Calculate time spent
-	double timeSpent = (double)(end - begin) / CLOCKS_PER_SEC;
+	double timeSpent = end - begin;
 
 
 	// Printing
