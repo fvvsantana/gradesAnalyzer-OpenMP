@@ -8,97 +8,13 @@
  * Lucas Nobuyuki Takahashi, 10295670
  * Mateus Castilho Leite, 9771550
  * Vinicius Henrique Borges, 9771546
- *
- *
- * PCAM:
- *
- * Particionamento:
- * Será feito um particionamento fino, por função e por dados. Haverão R*C*A*5*3
- * tarefas para o calculo de medidas por cidade, onde R é o número de Regiões,
- * C é o número de cidades por região, A é o número de alunos por cidade e 5
- * é a quantidade de medidas a serem calculadas. Livremente falando, cada uma
- * dessas tarefas contribuirão com uma nota de aluno para o cálculo da
- * medida a que lhes foi atribuída.
- * Também haverá uma tarefa que imprimirá todos os resultados na tela.
- *
- *
- * Comunicação:
- * Para a média aritmética será utilizada uma soma em árvore das tarefas e,
- * por fim, uma divisão pela quantidade total de tarefas.
- *
- * Para o mínimo e máximo serão feitas comparações em árvore de cada tarefa
- * afim de encontrar o menor ou maior valor do vetor de notas.
- *
- * As tarefas responsáveis pelo desvio padrão irão se sincronizar com a
- * tarefas das médias ariméticas, e receberão destas os respectivos 
- * resultados. Com cada tarefa tendo seu valor de média arimética e de nota
- * individual, elas realizarão a soma em árvore da diferença entre esses valores
- * elevado ao quadrado e realizarão o cálculo do desvio padrão.
- *
- * Consideramos que não é possível particionar o cálculo da mediana eficientemente,
- * por conta disso, optamos por realizá-la em uma única tarefa; portanto, essa
- * tarefa não realizará comunicação com nenhuma outra. Apesar disso, haverão
- * R*C + R + 1 tarefas independentes de mediana.
- *
- * Por fim, as tarefas que contêm os resultados se comunicarão com a tarefa
- * que imprime os valores.
- *
- *
- * Aglomeração:
- * Aqui é necessário analisar as sequência de cálculo dos dados:
- * média aritmética cidades <- média aritmética região <- média aritmética país
- * maior valor cidades <- maior valor região <- maior valor país
- * menor valor cidades <- menor valor região <- menor valor país
- * mediana cidades
- * mediana região
- * mediana país
- * desvio cidades
- * desvio região
- * desvio país
- * Onde A <- B indica que a operação B será executada após obter o resultado da operação A.
- * Assim podemos executar as medianas e desvios em paralelo, porém as medidas de média,
- * maior e menor são dependentes e criam uma fila onde o resultado de um é passado para o proximo.
- * Optamos por seguir essa sequência por considerarmos que, nas 3 primeiras medidas, é mais
- * vantajoso realizar uma execução sequencial do que recalcular os mesmos dados paralelamente.
- *
- * Devido às dependências existentes no cálculo da média arimética, elas serão
- * aglomeradas no mesmo processo que executará os cálculos de forma sequencial
- * (regiões após cidades, e país após regiões). Contudo, a média aritmética das
- * cidades poderá ser paralelizado internamente utilizando uma soma em árvore,
- * o mesmo se aplica às regiões a ao país.
- *
- * A mesma aglomeração utilizada nas tarefas de média aritmética também será utilizada
- * nas tarefas de maiores e menores notas. Contudo, utilizando comparações em árvore de maior/menor.
- *
- * As tarefas da mediana serão aglomeradas em 3 processos: por cidades, por regiões
- * e pelo país. Cada processo executará em paralelo em processadores distintos, porém seus
-* cálculos internos serão feitos de forma sequencial, como mencionado na comunicação.
-*
-* As tarefas de desvio padrão também serão aglomeradas em 3 processos principais que serão
-* executados em paralelo (processadores distintos). Porém, diferentemente da mediana, é possível paralelizar o cálculo
-* do desvio utilizando uma soma em árvore afim de obter as médias. As médias calculadas pelos
-* processos de média arimética não serão reutilizadas neste cálculo pois não há garantia de que
-* eles terminem sua execução antes das outras, de forma que o cálculo do desvio padrão, que já é
-* o mais demorado do programa, poderia ser severamente prejudicado. Além disso, o OpenMP não permite
-* uma sincronização fina entre sections específicas.
-*
-*
-* Mapeamento:
-* Os processos que realizarão redução em árvore serão mapeados para o mesmo processador afim de
-* minimizar os custos da comunicação, nessa regra se encaixam os processos de média aritmética,
-* de maior nota e menor nota.
-*
-* Os processos que serão executados independentemente de forma paralela poderão ser mapeados
-* em processadores distintos, nessa regra se encaixam os processos de mediana e desvio padrão.
-* No caso do desvio padrão, apesar de existirem comunicações de redução, consideramos que essas
-* serão irrelevantes perto do benefício de se paralelizar o cálculo entre cidades, regiões e país.
-*
 */
 
 /*
  * Calculates the minimum grade of a certain city
  *
- * The algorithm used iterates through the array, storing the current minimum value untill the end of the array, and returning this
+ * The algorithm used iterates through the array, storing the current minimum value untill the end of the
+ * array, and returning this
  *
  */
 int find_min(int* grades, int nStudents){
@@ -112,7 +28,8 @@ int find_min(int* grades, int nStudents){
 /*
  * Calculates the maximum grade of a certain city
  *
- * The algorithm used iterates through the array, storing the current maximum value untill the end of the array, and returning this
+ * The algorithm used iterates through the array, storing the current maximum value untill the end of the
+ * array, and returning this
  *
  */
 int find_max(int* grades, int nStudents){
@@ -140,10 +57,12 @@ int find_pos_of_max_double(double* vet, int size){
 /*
  * Calculates the median grade of a certain city
  *
- * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the buckets; Then it counts how many grades
- * are equal to a certain amount and once this count reaches half of the vector, the median is found.
+ * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling
+ * the buckets; Then it counts how many grades are equal to a certain amount and once this count
+ * reaches half of the vector, the median is found.
  *
- * The function returns double in case the amount of students is even, in which case an average will be returned.
+ * The function returns double in case the amount of students is even, in which case an average
+ * will be returned.
  */
 double find_median(int* grades, int nStudents, int range){
 	//Instead of sorting the array, we count how many of each grade are there, and parsing that array instead;
@@ -204,9 +123,8 @@ double calculate_average(int* grades, int nStudents){
 /*
  * Calculates standard deviation of the grades of the students of a given city
  *
- * The algorithm calculates the average first, then the standard deviation
+ * The algorithm receives the average to decrease execution time
  *
- * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
 double calculate_stddev(int* grades, double avg, int nStudents){
 	double sum = 0;
@@ -221,7 +139,8 @@ double calculate_stddev(int* grades, double avg, int nStudents){
 /*
  * Calculates the minimum grade of a certain city
  *
- * The algorithm used iterates through the array, storing the current minimum value untill the end of the array, and returning this
+ * The algorithm used iterates through the array, storing the current minimum value untill the end of the
+ * array, and returning this
  *
  */
 double find_min_double(double* grades, int nStudents){
@@ -235,7 +154,8 @@ double find_min_double(double* grades, int nStudents){
 /*
  * Calculates the maximum grade of a certain city
  *
- * The algorithm used iterates through the array, storing the current maximum value untill the end of the array, and returning this
+ * The algorithm used iterates through the array, storing the current maximum value untill the end of the
+ * array, and returning this
  *
  */
 double find_max_double(double* grades, int nStudents){
@@ -249,8 +169,9 @@ double find_max_double(double* grades, int nStudents){
 /*
  * Calculates the median grade of a certain city
  *
- * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the buckets; Then it counts how many grades
- * are equal to a certain amount and once this count reaches half of the vector, the median is found.
+ * The algorithm is divided into 2 parts. Firstly it runs the first half of a radix sort, filling the
+ * buckets; Then it counts how many grades are equal to a certain amount and once this count reaches
+ * half of the vector, the median is found.
  *
  * The function returns double in case the amount of students is even, in which case an average will be returned.
  */
@@ -317,9 +238,7 @@ double calculate_average_double(double* grades, int nStudents){
 /*
  * Calculates standard deviation of the grades of the students of a given city
  *
- * The algorithm calculates the average first, then the standard deviation
- *
- * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
+ * The algorithm receives the average to decrease execution time
  */
 double calculate_stddev_country(int*** grades, double avg, int nRegions, int nCities, int nStudents){
 	if(nStudents <= 1) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error

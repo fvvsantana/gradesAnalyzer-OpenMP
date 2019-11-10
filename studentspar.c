@@ -65,7 +65,6 @@ int main(){
 	double timeSpent = end - begin;
 
 	// Printing
-	debugPrintRegions(&input, regions);
 	printMeasuresByCity(measures.city, &input);
 	printMeasuresByRegion(measures.region, &input);
 	printMeasuresByCountry(measures.country);

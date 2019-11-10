@@ -38,7 +38,6 @@ int main(){
 
 
 	// Printing
-	debugPrintRegions(&input, regions);
 	printMeasuresByCity(measuresByCity, &input);
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);

@@ -166,22 +166,39 @@ void freeMeasuresByCity(double*** regions, int nRegions){
 
 /*
  * The following functions will fill the regions with taken the measures.
- * The convention to access the measures is measures[regionIndex][measureIndex][cityIndex].
+ * The convention to access the measures is by the struct Measures.
+ * the Struct Measures have 3 fields, city,region,country
+ * the Measures.city is 3 dimensional matrix, to access a element is used
+ * matrix[regionIndex][measureIndex][cityIndex]
  * This convention was adopted because it will facilitate the next step.
  * The next step is take the measures by region, so we'll need to sum up all the
  * cities from a region. So it's better having the cities sequencially in the
  * memory.
+ * the Measures.region is a two-dimensional matrix, to access a element is used
+ * matrix[measureIndex][regionIndex]
+ * the Measures.country is a vector, to access a element is used
+ * matrix[measureIndex]
+ * measureIndex can be:
+ * 0 - minimum
+ * 1 - maximun
+ * 2 - median
+ * 3 - average
+ * 4 - standard deviation
+ *
 */
 //Fill minimum grades by city, region, and country
 void fill_min(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
+		// calculate the min for cities
 		for(int j=0; j<input->nCities; j++){
 			measures->city[i][0][j] = find_min(regions[i][j], input->nStudents);
 		}
+		// calculate the min for regions
 		measures->region[0][i] = find_min_double(measures->city[i][0], input->nCities);
 	}
+	// calculate the min for country
 	measures->country[0] = find_min_double(measures->region[0], input->nRegions); 
 }
 
@@ -190,11 +207,14 @@ void fill_max(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
+		// calculate the max for cities
 		for(int j=0; j<input->nCities; j++){
 			measures->city[i][1][j] = find_max(regions[i][j], input->nStudents);
 		}
+		// calculate the max for regions
 		measures->region[1][i] = find_max_double(measures->city[i][1], input->nCities);
 	}
+	// calculate the max for country
 	measures->country[1] = find_max_double(measures->region[1], input->nRegions); 
 }
 
@@ -280,6 +300,7 @@ int getBestRegion(double** measuresByRegion){
 	return find_pos_of_max_double(measuresByRegion[3], measuresByRegion[4] - measuresByRegion[3]);
 }
 
+// Get the city that has the best average
 int getBestCity(double*** measuresByCity, int nRegions, int nCities){
 	int max_city = find_pos_of_max_double(measuresByCity[0][3], nCities);
 	double max_val = measuresByCity[0][3][max_city];
