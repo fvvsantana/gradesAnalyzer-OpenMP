@@ -2,22 +2,12 @@
 
 Na pasta do projeto, estão disponíveis os seguintes comandos:
 
-* Compilar o código sequencial
-```
-    make seq
-```
-
-* Rodar o código sequencial
+* Compilar e rodar o código sequencial
 ```
     make runseq
 ```
 
-* Compilar o código paralelo
-```
-    make par
-```
-
-* Rodar o código paralelo
+* Compilar e rodar o código paralelo
 ```
     make runpar
 ```
