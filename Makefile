@@ -1,6 +1,6 @@
 sourceseq = studentsseq.c utils.c statisticsseq.c
 sourcepar = studentspar.c utilspar.c statisticspar.c
-flags = -Wall -Wextra -Wpedantic -Werror -O2
+flags = -Wall -Wextra -Wpedantic -Werror -O2 -march=native
 
 all: $(sourceseq) $(sourcepar)
 	gcc $(sourceseq) $(flags) -o execseq -lm -fopenmp
