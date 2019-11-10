@@ -1,15 +1,18 @@
-all:
-	gcc studentsseq.c utils.c statisticsseq.c -g -o execseq -lm -fopenmp
-	gcc studentspar.c utilspar.c statisticspar.c -g -o execpar -lm -fopenmp
+sourceseq = studentsseq.c utils.c statisticsseq.c
+sourcepar = studentspar.c utilspar.c statisticspar.c
 
-execseq:
-	gcc studentsseq.c utils.c statisticsseq.c -g -o execseq -lm -fopenmp
+all: $(sourceseq) $(sourcepar)
+	gcc $(sourceseq) -g -o execseq -lm -fopenmp
+	gcc $(sourcepar) -g -o execpar -lm -fopenmp
+
+execseq: $(sourceseq)
+	gcc $(sourceseq) -g -o execseq -lm -fopenmp
 
 runseq: execseq
 	./execseq < input.in
 
-execpar:
-	gcc studentspar.c utilspar.c statisticspar.c -g -o execpar -lm -fopenmp
+execpar: $(sourcepar)
+	gcc $(sourcepar) -g -o execpar -lm -fopenmp
 
 runpar: execpar
 	./execpar < input.in
