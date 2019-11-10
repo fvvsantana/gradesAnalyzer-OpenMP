@@ -172,7 +172,7 @@ void freeMeasuresByCity(double*** regions, int nRegions){
  * cities from a region. So it's better having the cities sequencially in the
  * memory.
 */
-void fill_min(Region* regions, Measures* measures, Input* input, int maxGrade)
+void fill_min(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
@@ -185,7 +185,7 @@ void fill_min(Region* regions, Measures* measures, Input* input, int maxGrade)
 	measures->country[0] = find_min_double(measures->region[0], input->nRegions); 
 }
 
-void fill_max(Region* regions, Measures* measures, Input* input, int maxGrade)
+void fill_max(Region* regions, Measures* measures, Input* input)
 {
 	#pragma omp parallel for
 	for(int i=0; i<input->nRegions; i++){
@@ -321,9 +321,9 @@ void fillStddevByCountry(Region *regions, Measures *measures , Input *input){
 
 //Fill average by city, Region, and Country
 void fillAvgByCityRegionCountry(Region *regions , Measures *measures, Input *input){
-    #pragma parallel for
+    #pragma omp parallel for
     for(int i = 0 ; i < input->nRegions ; i++){
-        #pragma parallel for
+        #pragma omp parallel for
         for(int j = 0 ; j < input->nCities ; j++){
             measures->city[i][3][j] = calculate_average(regions[i][j], input->nStudents);
         }

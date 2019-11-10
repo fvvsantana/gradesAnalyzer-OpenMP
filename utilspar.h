@@ -46,9 +46,9 @@ void freeRegions(Region* regions, int nRegions);
 void freeMeasuresByCity(double*** regions, int nRegions);
 
 // Fill the measures struct with the minimum grades
-void fill_min(Region* regions, Measures* measures, Input* input, int maxGrade);
+void fill_min(Region* regions, Measures* measures, Input* input);
 // Fill the measures struct with the maximum grades
-void fill_max(Region* regions, Measures* measures, Input* input, int maxGrade);
+void fill_max(Region* regions, Measures* measures, Input* input);
 // Fill the measures struct with the median grades
 void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade);
 

@@ -12,7 +12,6 @@
 void debugPrintRegions(Input* input, Region* regions);
 
 int main(){
-	int i, j;
     // Read input
     Input input;
     readInput(&input);

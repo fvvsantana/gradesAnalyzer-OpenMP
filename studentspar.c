@@ -11,7 +11,6 @@
 void debugPrintRegions(Input* input, Region* regions);
 
 int main(){
-	int i, j;
 	// Read input
 	Input input;
 	readInput(&input);
@@ -38,11 +37,11 @@ int main(){
         }
 		#pragma omp section
 		{
-			fill_min(regions, &measures, &input, MAX_GRADE);
+			fill_min(regions, &measures, &input);
 		}
 		#pragma omp section
 		{
-			fill_max(regions, &measures, &input, MAX_GRADE);
+			fill_max(regions, &measures, &input);
 		}
         #pragma omp section
         {
