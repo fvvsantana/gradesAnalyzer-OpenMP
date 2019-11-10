@@ -31,25 +31,15 @@ int main(){
 	// Taking measures
 	#pragma omp parallel sections
 	{
-        #pragma omp section
-        {
-            fillStddevByCountry(regions, &measures , &input);
-        }
 		#pragma omp section
 		{
+            fill_avg(regions , &measures , &input);
 			fill_min(regions, &measures, &input);
-		}
-		#pragma omp section
-		{
 			fill_max(regions, &measures, &input);
 		}
         #pragma omp section
         {
-            fillAvgByCityRegionCountry(regions , &measures , &input);
-        }
-        #pragma omp section
-        {
-            fillStddevByCityAndRegion(regions , &measures , &input);
+            fill_std_dev(regions , &measures , &input);
         }
 		#pragma omp section
 		{
