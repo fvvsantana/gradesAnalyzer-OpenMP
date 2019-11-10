@@ -208,13 +208,9 @@ double calculate_average(int* grades, int nStudents){
  *
  * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
-double calculate_stddev(int* grades, int nStudents){
-	double sum = 0, avg = 0;
+double calculate_stddev(int* grades, double avg, int nStudents){
+	double sum = 0;
 	if(nStudents <= 0) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
-	for(int i = 0; i<nStudents; i++){
-		avg += grades[i];
-	}
-	avg /= nStudents;
 	for(int i = 0; i < nStudents; i++){
 		sum += (grades[i] - avg)*(grades[i] - avg);
 	}
@@ -325,21 +321,14 @@ double calculate_average_double(double* grades, int nStudents){
  *
  * The average is recalculated to avoid needing to wait for average calculations, should this code be used directly for paralelization
  */
-double calculate_stddev_country(int*** grades, int nRegions, int nCities, int nStudents){
+double calculate_stddev_country(int*** grades, double avg, int nRegions, int nCities, int nStudents){
 	if(nStudents <= 1) return 0; //there's no standard deviation if there's a single value. Also avoids zero division error
-	double sum = 0, avg = 0;
-	#pragma omp parallel for reduction(+: avg)
-	for(int i = 0; i<nRegions; i++){
-		for(int j = 0; j<nCities; j++){
-			for(int k = 0; k<nStudents; k++){
-				avg += grades[i][j][k];
-			}
-		}
-	}
-	avg /= (nRegions * nCities * nStudents);
+	double sum = 0;
     #pragma omp parallel for reduction (+: sum)
 	for(int i = 0; i < nRegions; i++){
+        //#pragma omp parallel for reduction (+: sum)
 		for(int j = 0; j < nCities; j++){
+            //#pragma omp parallel for reduction (+: sum)
 			for(int k = 0; k < nStudents; k++){
 				sum += (grades[i][j][k] - avg)*(grades[i][j][k] - avg);
 			}

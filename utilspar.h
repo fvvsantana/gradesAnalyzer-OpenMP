@@ -51,10 +51,8 @@ void fill_min(Region* regions, Measures* measures, Input* input);
 void fill_max(Region* regions, Measures* measures, Input* input);
 // Fill the measures struct with the median grades by city, region and country
 void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade);
-// Fill the measures struct with the standard deviation by city, region and country
-void fill_std_dev(Region *regions, Measures* measures , Input *input);
-// Fill the measures struct with the average grades by city, region and country
-void fill_avg(Region *regions , Measures *measures, Input *input);
+// Fill the measures struct with the average grades and standard deviation by city, region and country
+void fill_avg_std_dev(Region *regions , Measures *measures, Input *input);
 
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion);

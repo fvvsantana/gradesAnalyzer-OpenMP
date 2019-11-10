@@ -33,18 +33,17 @@ int main(){
 	{
 		#pragma omp section
 		{
-            fill_avg(regions , &measures , &input);
-			fill_min(regions, &measures, &input);
-			fill_max(regions, &measures, &input);
+			fill_median(regions, &measures, &input, MAX_GRADE);
+		}
+		#pragma omp section
+		{
+		    fill_avg_std_dev(regions , &measures , &input);
 		}
         #pragma omp section
         {
-            fill_std_dev(regions , &measures , &input);
+			fill_max(regions, &measures, &input);
+		    fill_min(regions, &measures, &input);
         }
-		#pragma omp section
-		{
-			fill_median(regions, &measures, &input, MAX_GRADE);
-		}
 	}
 
 	int bestRegion, bestCity;
