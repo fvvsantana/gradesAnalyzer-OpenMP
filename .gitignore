@@ -1,5 +1,5 @@
-execpar
-execseq
+studentspar
+studentsseq
 .ycm_extra_conf.py
 .gdb_history
 peda-session*

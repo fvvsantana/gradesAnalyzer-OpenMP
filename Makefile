@@ -1,22 +1,24 @@
 sourceseq = studentsseq.c utils.c statisticsseq.c
 sourcepar = studentspar.c utilspar.c statisticspar.c
-flags = -Wall -Wextra -Wpedantic -Werror -O2 -march=native
+binseq = studentsseq
+binpar = studentspar
+flags = -Wall -Wextra -Wpedantic -O2 -march=native
 
 all: $(sourceseq) $(sourcepar)
-	gcc $(sourceseq) $(flags) -o execseq -lm -fopenmp
-	gcc $(sourcepar) $(flags) -o execpar -lm -fopenmp
+	gcc $(sourceseq) $(flags) -o $(binseq) -lm -fopenmp
+	gcc $(sourcepar) $(flags) -o $(binpar) -lm -fopenmp
 
-execseq: $(sourceseq)
-	gcc $(sourceseq) $(flags) -o execseq -lm -fopenmp
+$(binseq): $(sourceseq)
+	gcc $(sourceseq) $(flags) -o $(binseq) -lm -fopenmp
 
-runseq: execseq
-	./execseq < input.in
+runseq: $(binseq)
+	./$(binseq) < input.in
 
-execpar: $(sourcepar)
-	gcc $(sourcepar) $(flags) -o execpar -lm -fopenmp
+$(binpar): $(sourcepar)
+	gcc $(sourcepar) $(flags) -o $(binpar) -lm -fopenmp
 
-runpar: execpar
-	./execpar < input.in
+runpar: $(binpar)
+	./$(binpar) < input.in
 
 debug: flags += -g
 debug: all
