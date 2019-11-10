@@ -41,8 +41,8 @@ int main(){
 		}
         #pragma omp section
         {
-			fill_max(regions, &measures, &input);
 		    fill_min(regions, &measures, &input);
+			fill_max(regions, &measures, &input);
         }
 	}
 

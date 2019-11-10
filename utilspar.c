@@ -238,7 +238,7 @@ void fill_avg_std_dev(Region *regions , Measures *measures, Input *input){
         // calculate avg of regions
         #pragma omp section
         {
-            #pragma omp parallel for
+            //#pragma omp parallel for
             for(int i = 0 ; i < input->nRegions ; i++){
                 measures->region[3][i] = calculate_average_double(measures->city[i][3] , input->nCities);
             }
@@ -248,7 +248,6 @@ void fill_avg_std_dev(Region *regions , Measures *measures, Input *input){
         {
             #pragma omp parallel for
             for(int i = 0 ; i < input->nRegions ; i++){
-                //#pragma parallel for
                 for(int j = 0 ; j < input->nCities ; j++){
                     measures->city[i][4][j] = calculate_stddev(regions[i][j] , measures->city[i][3][j], input->nStudents);
                 }
