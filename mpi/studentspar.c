@@ -22,6 +22,7 @@ int main(int argc , char *argv[]){
 	MPI_Comm interCommmunicator;
 
 	int err_code[N_PROCESS];
+	int amountRegionsPerProcess[N_PROCESS];
 
 	MPI_Init(&argc , &argv);
 
@@ -72,12 +73,12 @@ int main(int argc , char *argv[]){
 	MPI_Request request;
 	for(int i = 0 ; i < processInit ; i++){
 		// amount of regions to send to process 'i'
-		int aux = amountOfRegions + (restRegions > 0);
+		amountRegionsPerProcess[i] = amountOfRegions + (restRegions > 0);
 		restRegions--;
-		printf("processo %d vai receber %d regios\n" , i , aux);
+		printf("processo %d vai receber %d regios\n" , i , amountRegionsPerProcess[i]);
 		// don't send anything if aux is 0
-		if(aux){
-			for(int j = 0 ; j < aux ; j++){
+		if(amountRegionsPerProcess[i]){
+			for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
 				printf("send não bloqueante para %d com tag %d\n" , i , j);
 				// Non-Clock send regions one a one because ... escrever aqui a explicação, não sou muito bom com ingles
 				MPI_Send(regions[contRegions][0] , input.nCities * input.nStudents , MPI_INT , i , j , interCommmunicator );
@@ -86,7 +87,23 @@ int main(int argc , char *argv[]){
 		}
 	}
 
+
 	// Taking measures
+	
+	// fazer calculo da mediana ,maior, menor se quiserem media e desvio, tudo do país
+	
+	
+	// 
+	int dataRecvGather[processInit];
+	int displ[processInit];
+	for(int i = 0 ; i < processInit ; i++){
+		dataRecvScather[i] = processInit[i] * NMEASURES;
+		displ[i] = 0;
+	}
+
+	MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvScather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
+
+
 
 	// Get time
 	double end = omp_get_wtime();
