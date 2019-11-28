@@ -27,24 +27,30 @@ int main (int argc , char* argv[]){
 	// recebe os dados do input e a quantidade de processos inicializados
 	MPI_Bcast(receivInput , 4 , MPI_INT , 0 , parentComm);
 	input.nCities = receivInput[0];
-	input.nRegions = receivInput[1];
 	input.nStudents = receivInput[2];
 	int processInit = receivInput[3];
 
 
 	// calcula quantas regiões vai receber
-	int amountRegionsReceive =  input.nRegions / processInit + (input.nRegions % processInit  > rank);
+	int amountRegionsReceive =  receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
+	input.nRegions = amountRegionsReceive;
 	printf("processo %d tem que receber %d\n" , rank , amountRegionsReceive);
 	// testa para ver se tem alguma região para receber
-	if(amountRegionsReceive){
+	if(input.nRegions){
+		//aloca a medidas
+		Measures measures;
+		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
+		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
+		measures.country = allocateForMeasuresByCountry(NMEASURES);
+
 		// aloca a estrutura que vai armazenar as regiões
 		Region *regions = malloc(sizeof(Region) * amountRegionsReceive);
 		// recebe cada região de forma não bloqueante para já ir ajeitando os ponteiros das cidades.
-		for(int i  = 0 ; i < amountRegionsReceive ; i++){
+		for(int i  = 0 ; i < input.nRegions ; i++){
 			MPI_Request request;
 			MPI_Status status;
 			regions[i] = (int**) malloc(sizeof(int*) * input.nCities);
-			regions[i][0] = (int**) malloc(sizeof(int) * input.nCities *  input.nStudents);
+			regions[i][0] = (int*) malloc(sizeof(int) * input.nCities *  input.nStudents);
 			MPI_Irecv(regions[i][0] , input.nCities * input.nStudents , MPI_INT , 0 , i , parentComm, &request);
 			for(int j = 1 ; j < input.nCities ; j++){
 				regions[i][j] = regions[i][j-1] + input.nStudents;
@@ -52,7 +58,7 @@ int main (int argc , char* argv[]){
 			MPI_Wait(&request , &status);
 		}
 
-		for(int i = 0 ; i < amountRegionsReceive ; i++){
+		for(int i = 0 ; i < input.nRegions ; i++){
 			for(int j = 0 ; j < input.nCities ; j++){
 				printf("%d %d %d " , rank , i , j);
 				fflush(stdout);
@@ -68,6 +74,7 @@ int main (int argc , char* argv[]){
 
 
 		for(int i = 0 ; i < amountRegionsReceive ; i++){
+			free(regions[i][0]);
 			free(regions[i]);
 		}
 		free(regions);

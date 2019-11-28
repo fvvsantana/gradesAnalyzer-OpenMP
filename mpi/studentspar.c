@@ -35,8 +35,8 @@ int main(int argc , char *argv[]){
 	// Variables to store best regio and best city
 	int bestRegion, bestCity;
 
-    //enable nested parallel
-    omp_set_nested(1);
+	//enable nested parallel
+	omp_set_nested(1);
 
 	// create process to execute programn
 	//
