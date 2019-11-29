@@ -43,7 +43,6 @@ int main (int argc , char* argv[]){
 		Measures measures;
 		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
-		measures.country = allocateForMeasuresByCountry(NMEASURES);
 
 		// aloca a estrutura que vai armazenar as regiões
 		Region *regions = malloc(sizeof(Region) * input.nRegions);
@@ -85,9 +84,11 @@ int main (int argc , char* argv[]){
 
 
         // send regions results
+        // descomentar depois
         //MPI_Gatherv(measures.region , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
 
         for ( int i = 0 ; i < input.nRegions ; i++){
+            //descomentar depois
             //MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
         }
 
@@ -101,8 +102,6 @@ int main (int argc , char* argv[]){
         freeMeasuresByCity(measures.city, input.nRegions);
         // Free matrix of measures by region
         matrix_delete_double(measures.region);
-        // Free array of measures by country
-        free(measures.country);
 
 	}
 
