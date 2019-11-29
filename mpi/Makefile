@@ -2,7 +2,7 @@ sourceseq = studentsseq.c utils.c statisticsseq.c
 sourcepar = utilspar.c statisticspar.c
 binseq = studentsseq
 binpar = studentspar
-flags = -Wall -Wextra -Wpedantic -O0 -g
+flags = -Wall -Wextra -Wpedantic  -march=native -O2
 
 all: $(sourceseq) $(sourcepar)
 	gcc $(sourceseq) $(flags) -o $(binseq) -lm -fopenmp
@@ -17,7 +17,7 @@ runseq: $(binseq)
 
 $(binpar): $(sourcepar)
 	mpicc $(sourcepar) studentspar.c $(flags) -o $(binpar) -lm -fopenmp
-	mpicc $(sourcepar) studentsparCalculator.c $(binpar) -lm -fopenmp
+	mpicc $(sourcepar) studentsparCalculator.c $(flags)  -o studentsparCalculator -lm -fopenmp
 
 runpar: $(binpar)
 	./$(binpar) < input.in

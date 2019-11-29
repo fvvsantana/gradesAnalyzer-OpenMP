@@ -7,7 +7,6 @@
 #include <mpi.h>
 
 #define MAX_GRADE 100
-#define NMEASURES 5
 
 #define N_PROCESS 11
 
@@ -46,21 +45,15 @@ int main(int argc , char *argv[]){
 	MPI_Comm_rank(MPI_COMM_WORLD , &rank);
 	printf(" %d %d  %d\n" , input.nRegions , input.nCities , input.nStudents);
 
-	printf("inicialização dos processo\n");
 	MPI_Comm_spawn("studentsparCalculator" , MPI_ARGV_NULL , N_PROCESS , MPI_INFO_NULL , rank , MPI_COMM_WORLD , &interCommmunicator , err_code);
 
 
-	printf("teste de quem iniciou\n");
 	for(int i = 0 ; i < N_PROCESS ; i++){
 		if(err_code[i] != MPI_SUCCESS){
 			printf("Não consegui inicializar o processo %d\n" , i);
 			processInit--;
 		}
 	}
-	printf("fim da inicialização dos %d processos \n" , processInit);
-
-	printf("print dos dados\n");
-	debugPrintRegions(&input , regions);
 
 	// Get time
 	double begin = omp_get_wtime();
@@ -88,20 +81,35 @@ int main(int argc , char *argv[]){
 	}
 
 
-	// Taking measures
-	
-	// fazer calculo da mediana ,maior, menor se quiserem media e desvio, tudo do país
-	
-	
-	// 
+
+    // tempo ocioso se alguem conseguir colocar algo aqui, mas que termine rapido o bastante para começar a receber os dados
+
+
+	// aqui ele recebe o resultado dos calculos das regioes
 	int dataRecvGather[processInit];
 	int displ[processInit];
 	for(int i = 0 ; i < processInit ; i++){
-		dataRecvScather[i] = processInit[i] * NMEASURES;
+		dataRecvGather[i] = amountRegionsPerProcess[i] * NMEASURES;
 		displ[i] = 0;
 	}
+	//MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
 
-	MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvScather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
+    // faz tudo em paralelo enquanto recupera os resultados das cidades.
+    #pragma omp parallel sections shared(measures)
+    {
+        #pragma omp section
+        {
+            int cont = 0;
+            for(int i = 0 ; i < processInit ; i++){
+                for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
+                    MPI_Status status;
+                    //MPI_Recv(measures.city[cont][0] , input.nCities * NMEASURES , MPI_DOUBLE , i , j , interCommmunicator , &status);
+                    cont++;
+                }
+            }
+        }
+    }
+
 
 
 

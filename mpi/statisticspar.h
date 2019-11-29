@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <math.h>
+#define NMEASURES 5
 
 int find_min(int* grades, int nStudents);
 int find_max(int* grades, int nStudents);

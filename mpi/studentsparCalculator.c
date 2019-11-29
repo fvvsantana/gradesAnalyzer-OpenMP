@@ -32,19 +32,21 @@ int main (int argc , char* argv[]){
 
 
 	// calcula quantas regiões vai receber
-	int amountRegionsReceive =  receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
-	input.nRegions = amountRegionsReceive;
-	printf("processo %d tem que receber %d\n" , rank , amountRegionsReceive);
+    // faz o inpút ter a quantidade de regioes recebidas.
+    
+    // apagar esse comentario depois fiz isso para facilitar o uso das funcoes
+    // já prontas
+	input.nRegions = receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
 	// testa para ver se tem alguma região para receber
 	if(input.nRegions){
-		//aloca a medidas
+		//aloca as variaveis que vão armazenar os resultados
 		Measures measures;
 		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 		measures.country = allocateForMeasuresByCountry(NMEASURES);
 
 		// aloca a estrutura que vai armazenar as regiões
-		Region *regions = malloc(sizeof(Region) * amountRegionsReceive);
+		Region *regions = malloc(sizeof(Region) * input.nRegions);
 		// recebe cada região de forma não bloqueante para já ir ajeitando os ponteiros das cidades.
 		for(int i  = 0 ; i < input.nRegions ; i++){
 			MPI_Request request;
@@ -52,13 +54,15 @@ int main (int argc , char* argv[]){
 			regions[i] = (int**) malloc(sizeof(int*) * input.nCities);
 			regions[i][0] = (int*) malloc(sizeof(int) * input.nCities *  input.nStudents);
 			MPI_Irecv(regions[i][0] , input.nCities * input.nStudents , MPI_INT , 0 , i , parentComm, &request);
+            // ajusta os ponteiros das regioes
 			for(int j = 1 ; j < input.nCities ; j++){
 				regions[i][j] = regions[i][j-1] + input.nStudents;
 			}
 			MPI_Wait(&request , &status);
 		}
 
-		for(int i = 0 ; i < input.nRegions ; i++){
+        // print dos dados recebidos
+/*		for(int i = 0 ; i < input.nRegions ; i++){
 			for(int j = 0 ; j < input.nCities ; j++){
 				printf("%d %d %d " , rank , i , j);
 				fflush(stdout);
@@ -68,16 +72,38 @@ int main (int argc , char* argv[]){
 				printf("\n" );
 			}
 			printf("\n");
-		}
+		}*/
 
 
+        // fazer os calculos das medidas aqui
+        // ==================================
+        
+        
+        // ==================================
+
+        // send results to the root process
 
 
-		for(int i = 0 ; i < amountRegionsReceive ; i++){
+        // send regions results
+        //MPI_Gatherv(measures.region , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
+
+        for ( int i = 0 ; i < input.nRegions ; i++){
+            //MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
+        }
+
+        // Free array of regions
+		for(int i = 0 ; i < input.nRegions ; i++){
 			free(regions[i][0]);
 			free(regions[i]);
 		}
 		free(regions);
+        // Free array of regions for result
+        freeMeasuresByCity(measures.city, input.nRegions);
+        // Free matrix of measures by region
+        matrix_delete_double(measures.region);
+        // Free array of measures by country
+        free(measures.country);
+
 	}
 
 
