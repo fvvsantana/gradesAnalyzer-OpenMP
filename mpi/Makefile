@@ -20,7 +20,7 @@ $(binpar): $(sourcepar)
 	mpicc $(sourcepar) studentsparCalculator.c $(flags)  -o studentsparCalculator -lm -fopenmp
 
 runpar: $(binpar)
-	./$(binpar) < input.in
+	mpirun -np 1 --hostfile hostfile.txt ./$(binpar)
 
 debug: flags += -g
 debug: all
