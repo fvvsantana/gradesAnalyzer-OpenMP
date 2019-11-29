@@ -25,14 +25,16 @@ int main(int argc , char *argv[]){
 
 	MPI_Init(&argc , &argv);
 
-	// Allocation
+	// Allocation makes sure that each region has contiguous data, but he regions themselves might not be.
+	// This is done because the chance of a failure with a very big malloc is much greater
+	// if we had to account for alloc fail, we'd have to code the whole program twice, so we decided with the easiest implementation
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
 	Measures measures;
 	measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 	measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 	measures.country = allocateForMeasuresByCountry(NMEASURES);
 
-	// Variables to store best regio and best city
+	// Variables to store best region and best city
 	int bestRegion, bestCity;
 
 	//enable nested parallel
@@ -48,6 +50,7 @@ int main(int argc , char *argv[]){
 	MPI_Comm_spawn("studentsparCalculator" , MPI_ARGV_NULL , N_PROCESS , MPI_INFO_NULL , rank , MPI_COMM_WORLD , &interCommmunicator , err_code);
 
 
+	//error checking
 	for(int i = 0 ; i < N_PROCESS ; i++){
 		if(err_code[i] != MPI_SUCCESS){
 			printf("Não consegui inicializar o processo %d\n" , i);
@@ -55,7 +58,7 @@ int main(int argc , char *argv[]){
 		}
 	}
 
-	// Get time
+	// starts the time measurement
 	double begin = omp_get_wtime();
 
 	int bufferSendInput[4] = { input.nCities , input.nRegions , input.nStudents  , processInit};
@@ -69,11 +72,11 @@ int main(int argc , char *argv[]){
 		amountRegionsPerProcess[i] = amountOfRegions + (restRegions > 0);
 		restRegions--;
 		printf("processo %d vai receber %d regios\n" , i , amountRegionsPerProcess[i]);
-		// don't send anything if aux is 0
+		// if there's no more regions to be sent, do nothing
 		if(amountRegionsPerProcess[i]){
 			for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
 				printf("send não bloqueante para %d com tag %d\n" , i , j);
-				// Non-Clock send regions one a one because ... escrever aqui a explicação, não sou muito bom com ingles
+				// Each region is sent separetly because they are not contiguous in memory.
 				MPI_Send(regions[contRegions][0] , input.nCities * input.nStudents , MPI_INT , i , j , interCommmunicator );
 				contRegions++;
 			}
@@ -85,7 +88,7 @@ int main(int argc , char *argv[]){
     // tempo ocioso se alguem conseguir colocar algo aqui, mas que termine rapido o bastante para começar a receber os dados
 
 
-	// aqui ele recebe o resultado dos calculos das regioes
+	// Starts receiving data
 	int dataRecvGather[processInit];
 	int displ[processInit];
 	for(int i = 0 ; i < processInit ; i++){
@@ -94,7 +97,7 @@ int main(int argc , char *argv[]){
 	}
 	//MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
 
-    // faz tudo em paralelo enquanto recupera os resultados das cidades.
+    // Paralelize data receiving and post-processing
     #pragma omp parallel sections shared(measures)
     {
         #pragma omp section
@@ -113,7 +116,7 @@ int main(int argc , char *argv[]){
 
 
 
-	// Get time
+	// finish time measurement
 	double end = omp_get_wtime();
 	// Calculate time spent
 	double timeSpent = end - begin;
@@ -141,7 +144,7 @@ int main(int argc , char *argv[]){
 	return 0;
 }
 
-// Print randomly generated regions
+// Print the randomly generated regions
 void debugPrintRegions(Input* input, Region* regions){
 	int i;
 	// Show matrices

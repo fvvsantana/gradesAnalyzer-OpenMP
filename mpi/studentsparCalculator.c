@@ -24,57 +24,42 @@ int main (int argc , char* argv[]){
 
 	int receivInput[4];
 
-	// recebe os dados do input e a quantidade de processos inicializados
+	// receive input data, and how many processes were initialized
 	MPI_Bcast(receivInput , 4 , MPI_INT , 0 , parentComm);
 	input.nCities = receivInput[0];
 	input.nStudents = receivInput[2];
 	int processInit = receivInput[3];
 
 
-	// calcula quantas regiões vai receber
-    // faz o inpút ter a quantidade de regioes recebidas.
+	// calculates how many regions each process receive
+	// and makes input have the correct amount of regions
     
     // apagar esse comentario depois fiz isso para facilitar o uso das funcoes
     // já prontas
 	input.nRegions = receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
-	// testa para ver se tem alguma região para receber
+	// checks if there is a region to receive
 	if(input.nRegions){
-		//aloca as variaveis que vão armazenar os resultados
+		//allocates the variables to store the results
 		Measures measures;
 		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 
-		// aloca a estrutura que vai armazenar as regiões
+		// allocates the structure that will store the regions
 		Region *regions = malloc(sizeof(Region) * input.nRegions);
-		// recebe cada região de forma não bloqueante para já ir ajeitando os ponteiros das cidades.
+		// receives each regions with a non-blocking functions and sets the city pointers
 		for(int i  = 0 ; i < input.nRegions ; i++){
 			MPI_Request request;
 			MPI_Status status;
 			regions[i] = (int**) malloc(sizeof(int*) * input.nCities);
 			regions[i][0] = (int*) malloc(sizeof(int) * input.nCities *  input.nStudents);
 			MPI_Irecv(regions[i][0] , input.nCities * input.nStudents , MPI_INT , 0 , i , parentComm, &request);
-            // ajusta os ponteiros das regioes
 			for(int j = 1 ; j < input.nCities ; j++){
 				regions[i][j] = regions[i][j-1] + input.nStudents;
 			}
 			MPI_Wait(&request , &status);
 		}
 
-        // print dos dados recebidos
-/*		for(int i = 0 ; i < input.nRegions ; i++){
-			for(int j = 0 ; j < input.nCities ; j++){
-				printf("%d %d %d " , rank , i , j);
-				fflush(stdout);
-				for(int z = 0 ; z < input.nStudents ; z++){
-					printf("%d " , regions[i][j][z]);
-				}
-				printf("\n" );
-			}
-			printf("\n");
-		}*/
-
-
-        // fazer os calculos das medidas aqui
+        // calculates the measures here
         // ==================================
         
         

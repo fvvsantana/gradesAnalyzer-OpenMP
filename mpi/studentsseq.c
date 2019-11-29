@@ -16,28 +16,30 @@ int main(){
     Input input;
     readInput(&input);
 
-	// Allocation
+	// Allocation is done here.
+	// Within each region, the information is contiguous, but the regions themselves might not be
+	// this is done so that there is a smaller chance of malloc failing due to requesting too much memory.
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
 	double*** measuresByCity = allocateForMeasuresByCity(&input, NMEASURES);
 	double** measuresByRegion = allocateForMeasuresByRegion(&input, NMEASURES);
 	double* measuresByCountry = allocateForMeasuresByCountry(NMEASURES);
 
 
-	// Get time
+	// start time measurement
 	double begin = omp_get_wtime();
-	// Taking measures
+	// calculate the desired measures
 	fillMeasuresByCity(regions, measuresByCity, &input, MAX_GRADE);
 	fillMeasuresByRegion(regions, measuresByCity, measuresByRegion, &input, MAX_GRADE);
 	fillMeasuresByCountry(regions, measuresByRegion, measuresByCountry, &input, MAX_GRADE);
 	int bestRegion = getBestRegion(measuresByRegion);
 	int bestCity = getBestCity(measuresByCity, input.nRegions, input.nCities);
-	// Get time
+	// finish time measurements
 	double end = omp_get_wtime();
 	// Calculate time spent
 	double timeSpent = end - begin;
 
 
-	// Printing
+	// Prints the results
 	printMeasuresByCity(measuresByCity, &input);
 	printMeasuresByRegion(measuresByRegion, &input);
 	printMeasuresByCountry(measuresByCountry);
@@ -58,7 +60,7 @@ int main(){
     return 0;
 }
 
-// Print randomly generated regions
+// Print the randomly generated regions
 void debugPrintRegions(Input* input, Region* regions){
 	int i;
 	// Show matrices
