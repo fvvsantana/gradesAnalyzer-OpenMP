@@ -11,8 +11,8 @@
 int main (int argc , char* argv[]){
 	int rank;
 	Input input;
-	char hostName[7];
-	int hostNameLen;
+	//char hostName[7];
+	//int hostNameLen;
 
 	MPI_Init(&argc , &argv);
 
@@ -21,7 +21,7 @@ int main (int argc , char* argv[]){
 	// get rank of process.
 	MPI_Comm_rank(MPI_COMM_WORLD , &rank);
 	MPI_Comm_get_parent(&parentComm);
-	MPI_Get_processor_name(hostName , &hostNameLen);
+	//MPI_Get_processor_name(hostName , &hostNameLen);
 
 	int receivInput[4];
 
@@ -35,9 +35,7 @@ int main (int argc , char* argv[]){
 	// calcula quantas regiões vai receber
     // faz o inpút ter a quantidade de regioes recebidas.
     
-    // apagar esse comentario depois fiz isso para facilitar o uso das funcoes
-    // já prontas
-	input.nRegions = receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
+	input.nRegions = receivInput[1] / processInit + ((receivInput[1] % processInit)  > rank);
 	// testa para ver se tem alguma região para receber
 	if(input.nRegions){
 		//aloca as variaveis que vão armazenar os resultados
@@ -101,11 +99,9 @@ int main (int argc , char* argv[]){
 
 
         // send regions results
-        // descomentar depois
-        //MPI_Gatherv(measures.region[0] , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
+        MPI_Gatherv(measures.region[0] , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
 
         for ( int i = 0 ; i < input.nRegions ; i++){
-            //descomentar depois
             MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
         }
 
