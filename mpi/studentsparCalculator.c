@@ -6,6 +6,7 @@
 #include "statisticspar.h"
 #include <mpi.h>
 
+#define MAX_GRADE 100
 
 int main (int argc , char* argv[]){
 	int rank;
@@ -43,7 +44,7 @@ int main (int argc , char* argv[]){
 		Measures measures;
 		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
-		measures.country = allocateForMeasuresByCountry(&input, NMEASURES);
+		measures.country = allocateForMeasuresByCountry(NMEASURES);
 
 		// aloca a estrutura que vai armazenar as regiões
 		Region *regions = malloc(sizeof(Region) * input.nRegions);
@@ -77,7 +78,22 @@ int main (int argc , char* argv[]){
 
         // fazer os calculos das medidas aqui
         // ==================================
-        
+        #pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				fill_median(regions, &measures, &input, MAX_GRADE);
+			}
+			#pragma omp section
+			{
+				fill_avg_std_dev(regions , &measures , &input);
+			}
+			#pragma omp section
+			{
+				fill_min(regions, &measures, &input);
+				fill_max(regions, &measures, &input);
+			}
+		}
         
         // ==================================
 
@@ -90,7 +106,7 @@ int main (int argc , char* argv[]){
 
         for ( int i = 0 ; i < input.nRegions ; i++){
             //descomentar depois
-            //MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
+            MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
         }
 
         // Free array of regions

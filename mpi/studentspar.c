@@ -10,7 +10,7 @@
 
 #define N_PROCESS 11
 
-void debugPrintRegions(Input* input, Region* regions);
+//void debugPrintRegions(Input* input, Region* regions);
 
 int main(int argc , char *argv[]){
 	// Read input
@@ -46,7 +46,7 @@ int main(int argc , char *argv[]){
 	int processInit = N_PROCESS;
 
 	MPI_Comm_rank(MPI_COMM_WORLD , &rank);
-	printf(" %d %d  %d\n" , input.nRegions , input.nCities , input.nStudents);
+	//printf(" %d %d  %d\n" , input.nRegions , input.nCities , input.nStudents);
 
 	MPI_Comm_spawn("studentsparCalculator" , MPI_ARGV_NULL , N_PROCESS , MPI_INFO_NULL , rank , MPI_COMM_WORLD , &interCommmunicator , err_code);
 
@@ -71,11 +71,11 @@ int main(int argc , char *argv[]){
 		// amount of regions to send to process 'i'
 		amountRegionsPerProcess[i] = amountOfRegions + (restRegions > 0);
 		restRegions--;
-		printf("processo %d vai receber %d regios\n" , i , amountRegionsPerProcess[i]);
+		//printf("processo %d vai receber %d regios\n" , i , amountRegionsPerProcess[i]);
 		// don't send anything if aux is 0
 		if(amountRegionsPerProcess[i]){
 			for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
-				printf("send não bloqueante para %d com tag %d\n" , i , j);
+				//printf("send não bloqueante para %d com tag %d\n" , i , j);
 				// Non-Clock send regions one a one because ... escrever aqui a explicação, não sou muito bom com ingles
 				MPI_Send(regions[contRegions][0] , input.nCities * input.nStudents , MPI_INT , i , j , interCommmunicator );
 				contRegions++;
@@ -108,14 +108,43 @@ int main(int argc , char *argv[]){
             for(int i = 0 ; i < processInit ; i++){
                 for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
                     MPI_Status status;
-                    //MPI_Recv(measures.city[cont][0] , input.nCities * NMEASURES , MPI_DOUBLE , i , j , interCommmunicator , &status);
+                    MPI_Recv(measures.city[cont][0] , input.nCities * NMEASURES , MPI_DOUBLE , i , j , interCommmunicator , &status);
                     cont++;
                 }
             }
         }
     }
 
+	// Taking measures for country
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			fill_country_median(regions, &measures, &input, MAX_GRADE);
+		}
+		#pragma omp section
+		{
+		    fill_country_avg_std_dev(regions , &measures , &input);
+		}
+        #pragma omp section
+        {
+		    fill_country_min(&measures, &input);
+			fill_country_max(&measures, &input);
+        }
+	}
 
+	// Determine the best region and city
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			bestRegion = getBestRegion(measures.region);
+		}
+		#pragma omp section
+		{
+			bestCity = getBestCity(measures.city, input.nRegions, input.nCities);
+		}
+	}
 
 
 	// Get time
@@ -124,12 +153,12 @@ int main(int argc , char *argv[]){
 	double timeSpent = end - begin;
 
 	// Printing
-/*	printMeasuresByCity(measures.city, &input);
+	printMeasuresByCity(measures.city, &input);
 	printMeasuresByRegion(measures.region, &input);
 	printMeasuresByCountry(measures.country);
 	printf("\nMelhor regiao: Regiao %d\n", bestRegion);
 	printf("Melhor cidade: Regiao %d, Cidade %d\n", bestCity/input.nCities, bestCity % input.nCities);
-	printf("Time spent: %lf seconds\n", timeSpent);*/
+	printf("Tempo de resposta sem considerar E/S, em segundos: %lf s\n", timeSpent);
 
 
 	// Free array of regions
