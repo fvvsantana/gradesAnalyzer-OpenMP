@@ -15,6 +15,7 @@ void debugPrintRegions(Input* input, Region* regions);
 int main(int argc , char *argv[]){
 	// Read input
 	Input input;
+	// Put read arguments inside structure input
 	readInput(&input);
 	int rank;
 
@@ -26,13 +27,15 @@ int main(int argc , char *argv[]){
 	MPI_Init(&argc , &argv);
 
 	// Allocation
+	// Allocate and fill regions with random values
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
 	Measures measures;
+	// Allocate structures to store measures
 	measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 	measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 	measures.country = allocateForMeasuresByCountry(NMEASURES);
 
-	// Variables to store best regio and best city
+	// Variables to store best region and best city
 	int bestRegion, bestCity;
 
 	//enable nested parallel
