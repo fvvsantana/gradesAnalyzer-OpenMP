@@ -10,16 +10,18 @@
 
 #define N_PROCESS 11
 
-void debugPrintRegions(Input* input, Region* regions);
+//void debugPrintRegions(Input* input, Region* regions);
 
 int main(int argc , char *argv[]){
 	// Read input
 	Input input;
+	// Put read arguments inside structure input
 	readInput(&input);
 	int rank;
 
 	MPI_Comm interCommmunicator;
 
+	// Result code of process spawning
 	int err_code[N_PROCESS];
 	int amountRegionsPerProcess[N_PROCESS];
 
@@ -30,6 +32,7 @@ int main(int argc , char *argv[]){
 	// if we had to account for alloc fail, we'd have to code the whole program twice, so we decided with the easiest implementation
 	Region* regions = generateRegions(&input, MAX_GRADE + 1);
 	Measures measures;
+	// Allocate structures to store measures
 	measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 	measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
 	measures.country = allocateForMeasuresByCountry(NMEASURES);
@@ -42,40 +45,37 @@ int main(int argc , char *argv[]){
 
 	// create process to execute programn
 	//
-	int processInit = N_PROCESS;
+	int processInit = input.nRegions >= N_PROCESS ? N_PROCESS : input.nRegions;
 
 	MPI_Comm_rank(MPI_COMM_WORLD , &rank);
-	printf(" %d %d  %d\n" , input.nRegions , input.nCities , input.nStudents);
+	//printf(" %d %d  %d\n" , input.nRegions , input.nCities , input.nStudents);
 
-	MPI_Comm_spawn("studentsparCalculator" , MPI_ARGV_NULL , N_PROCESS , MPI_INFO_NULL , rank , MPI_COMM_WORLD , &interCommmunicator , err_code);
+	// starts the time measurement
+	double begin = omp_get_wtime();
 
+	MPI_Comm_spawn("studentsparCalculator" , MPI_ARGV_NULL , processInit , MPI_INFO_NULL , rank , MPI_COMM_WORLD , &interCommmunicator , err_code);
 
 	//error checking
-	for(int i = 0 ; i < N_PROCESS ; i++){
+	for(int i = 0 ; i < processInit ; i++){
 		if(err_code[i] != MPI_SUCCESS){
 			printf("Não consegui inicializar o processo %d\n" , i);
 			processInit--;
 		}
 	}
 
-	// starts the time measurement
-	double begin = omp_get_wtime();
 
 	int bufferSendInput[4] = { input.nCities , input.nRegions , input.nStudents  , processInit};
 	MPI_Bcast(bufferSendInput , 4 , MPI_INT , MPI_ROOT , interCommmunicator);
 	int amountOfRegions = input.nRegions / processInit;
 	int restRegions = input.nRegions % processInit;
 	int contRegions = 0;
-	MPI_Request request;
 	for(int i = 0 ; i < processInit ; i++){
 		// amount of regions to send to process 'i'
 		amountRegionsPerProcess[i] = amountOfRegions + (restRegions > 0);
 		restRegions--;
-		printf("processo %d vai receber %d regios\n" , i , amountRegionsPerProcess[i]);
 		// if there's no more regions to be sent, do nothing
 		if(amountRegionsPerProcess[i]){
 			for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
-				printf("send não bloqueante para %d com tag %d\n" , i , j);
 				// Each region is sent separetly because they are not contiguous in memory.
 				MPI_Send(regions[contRegions][0] , input.nCities * input.nStudents , MPI_INT , i , j , interCommmunicator );
 				contRegions++;
@@ -91,11 +91,13 @@ int main(int argc , char *argv[]){
 	// Starts receiving data
 	int dataRecvGather[processInit];
 	int displ[processInit];
-	for(int i = 0 ; i < processInit ; i++){
+	dataRecvGather[0]  = amountRegionsPerProcess[0] * NMEASURES;
+	displ[0] = 0;
+	for(int i = 1 ; i < processInit ; i++){
 		dataRecvGather[i] = amountRegionsPerProcess[i] * NMEASURES;
-		displ[i] = 0;
+		displ[i] = displ[i-1] + amountRegionsPerProcess[i-1];
 	}
-	//MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
+	MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region[0] ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
 
     // Paralelize data receiving and post-processing
     #pragma omp parallel sections shared(measures)
@@ -106,14 +108,43 @@ int main(int argc , char *argv[]){
             for(int i = 0 ; i < processInit ; i++){
                 for(int j = 0 ; j < amountRegionsPerProcess[i] ; j++){
                     MPI_Status status;
-                    //MPI_Recv(measures.city[cont][0] , input.nCities * NMEASURES , MPI_DOUBLE , i , j , interCommmunicator , &status);
+                    MPI_Recv(measures.city[cont][0] , input.nCities * NMEASURES , MPI_DOUBLE , i , j , interCommmunicator , &status);
                     cont++;
                 }
             }
         }
     }
 
+	// Taking measures for country
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			fill_country_median(regions, &measures, &input, MAX_GRADE);
+		}
+		#pragma omp section
+		{
+		    fill_country_avg_std_dev(regions , &measures , &input);
+		}
+        #pragma omp section
+        {
+		    fill_country_min(&measures, &input);
+			fill_country_max(&measures, &input);
+        }
+	}
 
+	// Determine the best region and city
+	#pragma omp parallel sections
+	{
+		#pragma omp section
+		{
+			bestRegion = getBestRegion(measures.region);
+		}
+		#pragma omp section
+		{
+			bestCity = getBestCity(measures.city, input.nRegions, input.nCities);
+		}
+	}
 
 
 	// finish time measurement
@@ -122,12 +153,12 @@ int main(int argc , char *argv[]){
 	double timeSpent = end - begin;
 
 	// Printing
-/*	printMeasuresByCity(measures.city, &input);
+	printMeasuresByCity(measures.city, &input);
 	printMeasuresByRegion(measures.region, &input);
 	printMeasuresByCountry(measures.country);
 	printf("\nMelhor regiao: Regiao %d\n", bestRegion);
 	printf("Melhor cidade: Regiao %d, Cidade %d\n", bestCity/input.nCities, bestCity % input.nCities);
-	printf("Time spent: %lf seconds\n", timeSpent);*/
+	printf("Tempo de resposta sem considerar E/S, em segundos: %lf s\n", timeSpent);
 
 
 	// Free array of regions

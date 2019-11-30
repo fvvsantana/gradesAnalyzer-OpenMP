@@ -6,12 +6,13 @@
 #include "statisticspar.h"
 #include <mpi.h>
 
+#define MAX_GRADE 100
 
 int main (int argc , char* argv[]){
 	int rank;
 	Input input;
-	char hostName[7];
-	int hostNameLen;
+	//char hostName[7];
+	//int hostNameLen;
 
 	MPI_Init(&argc , &argv);
 
@@ -20,7 +21,7 @@ int main (int argc , char* argv[]){
 	// get rank of process.
 	MPI_Comm_rank(MPI_COMM_WORLD , &rank);
 	MPI_Comm_get_parent(&parentComm);
-	MPI_Get_processor_name(hostName , &hostNameLen);
+	//MPI_Get_processor_name(hostName , &hostNameLen);
 
 	int receivInput[4];
 
@@ -34,15 +35,14 @@ int main (int argc , char* argv[]){
 	// calculates how many regions each process receive
 	// and makes input have the correct amount of regions
     
-    // apagar esse comentario depois fiz isso para facilitar o uso das funcoes
-    // já prontas
-	input.nRegions = receivInput[1] / processInit + (receivInput[1] % processInit  > rank);
 	// checks if there is a region to receive
+	input.nRegions = receivInput[1] / processInit + ((receivInput[1] % processInit)  > rank);
 	if(input.nRegions){
 		//allocates the variables to store the results
 		Measures measures;
 		measures.city = allocateForMeasuresByCity(&input, NMEASURES);
 		measures.region = allocateForMeasuresByRegion(&input, NMEASURES);
+		measures.country = allocateForMeasuresByCountry(NMEASURES);
 
 		// allocates the structure that will store the regions
 		Region *regions = malloc(sizeof(Region) * input.nRegions);
@@ -61,7 +61,22 @@ int main (int argc , char* argv[]){
 
         // calculates the measures here
         // ==================================
-        
+        #pragma omp parallel sections
+		{
+			#pragma omp section
+			{
+				fill_median(regions, &measures, &input, MAX_GRADE);
+			}
+			#pragma omp section
+			{
+				fill_avg_std_dev(regions , &measures , &input);
+			}
+			#pragma omp section
+			{
+				fill_min(regions, &measures, &input);
+				fill_max(regions, &measures, &input);
+			}
+		}
         
         // ==================================
 
@@ -69,12 +84,10 @@ int main (int argc , char* argv[]){
 
 
         // send regions results
-        // descomentar depois
-        //MPI_Gatherv(measures.region , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
+        MPI_Gatherv(measures.region[0] , input.nRegions * NMEASURES , MPI_DOUBLE , NULL ,NULL, NULL, MPI_DOUBLE , 0 , parentComm);
 
         for ( int i = 0 ; i < input.nRegions ; i++){
-            //descomentar depois
-            //MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
+            MPI_Send(measures.city[i][0] , input.nCities * NMEASURES , MPI_DOUBLE , 0 , i , parentComm);
         }
 
         // Free array of regions

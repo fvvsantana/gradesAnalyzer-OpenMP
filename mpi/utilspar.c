@@ -197,9 +197,7 @@ void fill_min(Region* regions, Measures* measures, Input* input)
 		}
 		// calculate the min for regions
 		measures->region[0][i] = find_min_double(measures->city[i][0], input->nCities);
-	}
-	// calculate the min for country
-	measures->country[0] = find_min_double(measures->region[0], input->nRegions); 
+	} 
 }
 
 //Fill maximum grades by city, region, and country
@@ -214,8 +212,6 @@ void fill_max(Region* regions, Measures* measures, Input* input)
 		// calculate the max for regions
 		measures->region[1][i] = find_max_double(measures->city[i][1], input->nCities);
 	}
-	// calculate the max for country
-	measures->country[1] = find_max_double(measures->region[1], input->nRegions); 
 }
 
 //Fill median by city, region, and country
@@ -223,11 +219,6 @@ void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade
 {
 	#pragma omp parallel sections
 	{
-		// median by country
-		#pragma omp section
-		{
-			measures->country[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
-		}
 		// median by cities/regions
 		#pragma omp section
 		{
@@ -285,16 +276,30 @@ void fill_avg_std_dev(Region *regions , Measures *measures, Input *input){
                 measures->region[4][i] = calculate_stddev(regions[i][0] , measures->region[3][i], input->nStudents * input->nCities);
             }
         }
-        // calculate avg of country
-        #pragma omp section
-        {
-            measures->country[3] = calculate_average_double(measures->region[3], input->nRegions);
-        }
     }
-    // calculate standard deviation of country
-    measures->country[4] = calculate_stddev_country(regions,measures->country[3], input->nRegions, input->nCities ,input->nStudents);
 }
 
+void fill_country_min(Measures* measures, Input* input){
+	// calculate the min for country
+	measures->country[0] = find_min_double(measures->region[0], input->nRegions);
+}
+void fill_country_max(Measures* measures, Input* input){
+	// calculate the max for country
+	measures->country[1] = find_max_double(measures->region[1], input->nRegions); 
+}
+
+void fill_country_median(Region* regions, Measures* measures, Input* input, int maxGrade){
+	//calculate the median for country
+	measures->country[2] = find_median_country(regions, (input->nRegions), (input->nCities), (input->nStudents), maxGrade+1);
+}
+
+void fill_country_avg_std_dev(Region *regions , Measures *measures, Input *input){
+	//calculate the average of country
+	measures->country[3] = calculate_average_double(measures->region[3], input->nRegions);
+	//calculate the standard deviation of country
+	measures->country[4] = calculate_stddev_country(regions,measures->country[3], input->nRegions, input->nCities ,input->nStudents);
+
+}
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion){
 	return find_pos_of_max_double(measuresByRegion[3], measuresByRegion[4] - measuresByRegion[3]);

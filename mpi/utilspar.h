@@ -45,14 +45,23 @@ void freeRegions(Region* regions, int nRegions);
 // Free array allocated by allocateForMeasuresByCity
 void freeMeasuresByCity(double*** regions, int nRegions);
 
-// Fill the measures struct with the minimum grades by city, region and country
+// Fill the measures struct with the minimum grades by city and region 
 void fill_min(Region* regions, Measures* measures, Input* input);
-// Fill the measures struct with the maximum grades by city, region and country
+// Fill the measures struct with the maximum grades by city and region
 void fill_max(Region* regions, Measures* measures, Input* input);
-// Fill the measures struct with the median grades by city, region and country
+// Fill the measures struct with the median grades by city and region
 void fill_median(Region* regions, Measures* measures, Input* input, int maxGrade);
-// Fill the measures struct with the average grades and standard deviation by city, region and country
+// Fill the measures struct with the average grades and standard deviation by city and region
 void fill_avg_std_dev(Region *regions , Measures *measures, Input *input);
+// Fill the measures struct with the minimum grades by country
+void fill_country_min(Measures* measures, Input* input);
+// Fill the measures struct with the maximum grades by country
+void fill_country_max(Measures* measures, Input* input);
+// Fill the measures struct with the median grades by country
+void fill_country_median(Region* regions, Measures* measures, Input* input, int maxGrade);
+// Fill the measures struct with the average grades and standard deviation by country
+void fill_country_avg_std_dev(Region *regions , Measures *measures, Input *input);
+
 
 // Get the region that has the best average
 int getBestRegion(double** measuresByRegion);
