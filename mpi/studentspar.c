@@ -88,11 +88,13 @@ int main(int argc , char *argv[]){
 	// aqui ele recebe o resultado dos calculos das regioes
 	int dataRecvGather[processInit];
 	int displ[processInit];
-	for(int i = 0 ; i < processInit ; i++){
+	dataRecvGather[0]  = amountRegionsPerProcess[0] * NMEASURES;
+	displ[0] = 0;
+	for(int i = 1 ; i < processInit ; i++){
 		dataRecvGather[i] = amountRegionsPerProcess[i] * NMEASURES;
-		displ[i] = 0;
+		displ[i] = displ[i-1] + amountRegionsPerProcess[i-1];
 	}
-	//MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
+	//MPI_Gatherv(NULL , 0 , MPI_DOUBLE , measures.region[0] ,dataRecvGather, displ, MPI_DOUBLE , MPI_ROOT , interCommmunicator);
 
     // faz tudo em paralelo enquanto recupera os resultados das cidades.
     #pragma omp parallel sections shared(measures)
